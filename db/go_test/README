@@ -1,0 +1,3 @@
+GO:
+	1:cp -r stardbSql  $gopath/src/
+	2:go build statdb.go
