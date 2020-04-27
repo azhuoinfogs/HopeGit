@@ -1,0 +1,11 @@
+Package: mysoftware
+Version: 2016-02-26
+Section: free
+Priority: optional
+Depends: libssl.0.0.so, libstdc++2.10-glibc2.2
+Suggests: Openssl
+Architecture: i386
+Installed-Size: 66666
+Maintainer: Simon @ newdivide7037#gmail.com
+Provides: mysoftware
+Description: just for test
