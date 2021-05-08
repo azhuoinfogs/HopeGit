@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+
 void* my_memcpy(void* dest, const void* src, unsigned int count)
 {
 	assert(dest && src);//断言
@@ -38,7 +39,7 @@ void* my_memset(void* dest, int a, unsigned int count)
 	while (count--)
 	{
 		*(char*)dest = a;
-		++(char*)dest;
+		(char*)++dest;
 	}
 
 	return temp;//返回dest的首地址
@@ -63,11 +64,15 @@ int main()
     int arr[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 	i = 0;
 	memmove(arr + 2, arr, 16);
-
 	for (i = 0; i < 10; i++)
 	{
 		printf("%d ", arr[i]);
 	}
-
+	printf("\n");
+	int _n = 13;
+	if (_n&(sizeof(long)-1))
+		printf("%d\n", (_n&(sizeof(long)-1)));
+		_n += sizeof(long)-(_n&(sizeof(long)-1));
+	printf("%d--%d--%d\n",_n, sizeof(long), sizeof(int));
 	return 0;
 }
