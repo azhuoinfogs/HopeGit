@@ -1,0 +1,4 @@
+/root/code/HopeGit/cmake/libCMake/build/CMakeFiles/rebuild_cache.dir
+/root/code/HopeGit/cmake/libCMake/build/CMakeFiles/edit_cache.dir
+/root/code/HopeGit/cmake/libCMake/build/CMakeFiles/testFunc_shared.dir
+/root/code/HopeGit/cmake/libCMake/build/CMakeFiles/testFunc_static.dir

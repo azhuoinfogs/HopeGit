@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../src/../include/testFunc.h
+
+/root/code/HopeGit/cmake/3CMake/src/main.c
+stdio.h
+-
+testFunc.h
+/root/code/HopeGit/cmake/3CMake/src/testFunc.h
+
+/root/code/HopeGit/cmake/3CMake/src/testFunc.c
+stdio.h
+-
+testFunc.h
+/root/code/HopeGit/cmake/3CMake/src/testFunc.h
+

@@ -1,0 +1,11 @@
+cmake_minimum_required (VERSION 3.5)
+include_directories (../include)
+set (SRC_LIST ${PROJECT_SOURCE_DIR}/src/testFunc.c)
+set (SRC_LIST1 ${PROJECT_SOURCE_DIR}/src/testFunc1.c)
+
+add_executable (main main.c ${SRC_LIST})
+if (MYDEBUG)
+    add_executable(main1 main1.c ${SRC_LIST1})
+else()
+    message(STATUS "Currently is not in debug mode")    
+endif()

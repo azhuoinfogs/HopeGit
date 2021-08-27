@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../lib/libFunc.a  CMakeFiles/testFunc_static.dir/src/testFunc.c.o
+/usr/bin/ranlib ../lib/libFunc.a
