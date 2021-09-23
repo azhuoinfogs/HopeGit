@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../../lib/libelog.a CMakeFiles/libelog_static.dir/src/elog.c.o CMakeFiles/libelog_static.dir/src/elog_async.c.o CMakeFiles/libelog_static.dir/src/elog_buf.c.o CMakeFiles/libelog_static.dir/src/elog_utils.c.o CMakeFiles/libelog_static.dir/port/elog_port.c.o CMakeFiles/libelog_static.dir/plugins/file/elog_file_port.c.o CMakeFiles/libelog_static.dir/plugins/file/elog_file.c.o
+/usr/bin/ranlib ../../lib/libelog.a
