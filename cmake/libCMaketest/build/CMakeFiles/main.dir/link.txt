@@ -1,1 +1,0 @@
-/usr/bin/cc    CMakeFiles/main.dir/src/main.c.o  -o ../bin/main -Wl,-rpath,/root/code/HopeGit/cmake/libCMaketest/func/lib ../func/lib/libFunc.so 

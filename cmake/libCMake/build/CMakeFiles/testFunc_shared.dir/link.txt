@@ -1,1 +1,0 @@
-/usr/bin/cc -fPIC   -shared -Wl,-soname,libFunc.so -o ../lib/libFunc.so CMakeFiles/testFunc_shared.dir/src/testFunc.c.o 

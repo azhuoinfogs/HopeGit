@@ -126,8 +126,6 @@ int main(int argc, char **argv)
             if (handle(events[n].data.fd) < 0) {
                 epoll_ctl(kdpfd, EPOLL_CTL_DEL, events[n].data.fd,&ev);
                 curfds--;
-
-
             }
         }
     }

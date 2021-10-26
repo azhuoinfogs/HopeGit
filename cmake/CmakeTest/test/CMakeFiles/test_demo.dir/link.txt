@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/test_demo.dir/test.cpp.o -o test_demo  -Wl,-rpath,/home/keyvalue/code/HopeGit/cmake/CmakeTest/src /usr/local/lib/libgtest.a /usr/local/lib/libgtest_main.a ../src/libadd.so 
