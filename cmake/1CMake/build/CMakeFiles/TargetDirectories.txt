@@ -1,3 +1,0 @@
-/root/code/HopeGit/cmake/1CMake/build/CMakeFiles/rebuild_cache.dir
-/root/code/HopeGit/cmake/1CMake/build/CMakeFiles/main.dir
-/root/code/HopeGit/cmake/1CMake/build/CMakeFiles/edit_cache.dir

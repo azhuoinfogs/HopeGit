@@ -1,1 +1,0 @@
-/usr/bin/cc   -rdynamic CMakeFiles/main.dir/src/main.c.o CMakeFiles/main.dir/src/testFunc.c.o CMakeFiles/main.dir/src/testFunc1.c.o  -o ../bin/main 

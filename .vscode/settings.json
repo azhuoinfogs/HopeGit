@@ -42,6 +42,7 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "adlist.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "logging.h": "c"
     }
 }
