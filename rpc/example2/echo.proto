@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+//支持rpc服务代码生成
+option cc_generic_services = true;
+
+//C#命名空间
+option csharp_namespace = "Google.Protobuf.Auth";
+
+package Auth;
+
+
+//Rpc协议
+message RpcProtocol
+{
+uint32 serviceId = 1;
+uint32 methodId = 2;
+bytes data = 3;
+int32 falg = 4;
+}
+message UserInfo
+{
+    string phoneNum = 1;
+	string password = 2;
+}
+message ResponseMsg
+{
+	int32 code = 1;
+    bytes message = 2;
+}
+
+//鉴权服务
+service Authentication {
+  //注册申请
+  rpc UserApplyReg(UserInfo) returns (ResponseMsg);
+  //用户注册
+  rpc  UserRegister(UserInfo) returns (ResponseMsg);
+  //用户登陆
+  rpc  UserLogin(UserInfo) returns (ResponseMsg);
+}
