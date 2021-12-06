@@ -1,0 +1,38 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "empty compile",
+            "type": "shell",
+            // "command": "rm -rf data/*",
+            "command": "make clean",
+            "isBackground": true,
+            "args": [
+                ], // 程序调试时传递给程序的命令行参数            
+        },
+        {
+            "label": "compile",
+            "type": "shell",
+            "command": "make && make install",
+            "args": [
+                ], // 程序调试时传递给程序的命令行参数            
+        },
+        {
+            "label": "build project",
+            "type": "shell",
+            "command": "make starkv_test",
+            "args": [
+                ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn":[
+                "empty compile",
+                "compile"
+                ]
+        }
+    ]
+}

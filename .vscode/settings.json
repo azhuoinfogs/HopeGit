@@ -73,6 +73,15 @@
         "*.inc": "cpp",
         "codecvt": "cpp",
         "complex": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "kv_store.h": "c",
+        "inttypes.h": "c",
+        "os.h": "c",
+        "data_block.h": "c",
+        "bitmap.h": "c",
+        "resource.h": "c",
+        "skiplist.h": "c",
+        "compare.h": "c",
+        "util.h": "c"
     }
 }
