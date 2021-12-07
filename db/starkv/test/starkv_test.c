@@ -22,31 +22,31 @@ int main () {
 	char *err = NULL;
 	unsigned char *sv;
 	size_t val_len;
-    int count = 1000;
-	for (int i = 0; i < count; i++) {
-		memset(key, 0, KSIZE);
-		memset(val, 0, VSIZE);
-        _random_key(key, KSIZE-1);
-		_random_key(val, VSIZE-1);
-		unsigned char *keybuf =  calloc(1,strlen(key));
-		memcpy(keybuf, key, strlen(key));
-		size_t keybuf_len = strlen(key);
-		unsigned char *valbuf =  calloc(1,strlen(val));
-		memcpy(valbuf, val, strlen(val));
-		size_t valbuf_len = strlen(val);
-		starkv_put(dev, keybuf, keybuf_len, valbuf, valbuf_len, &err);
-		ret = starkv_get(dev, keybuf, keybuf_len, &sv, &val_len, &err);
-		if(sv) {
-			if ((memcmp(sv, valbuf, val_len) != 0 ))
-				printf("get wrong value:%s--%s\n", sv, valbuf);
-			free(sv);
-			sv = NULL;
-		} else {
-			printf("get:%s  failed\n", keybuf);
-		}
-		free(keybuf);
-		free(valbuf);
-	}
+    int count = 10000;
+	// for (int i = 0; i < count; i++) {
+	// 	memset(key, 0, KSIZE);
+	// 	memset(val, 0, VSIZE);
+    //     _random_key(key, KSIZE-1);
+	// 	_random_key(val, VSIZE-1);
+	// 	unsigned char *keybuf =  calloc(1,strlen(key));
+	// 	memcpy(keybuf, key, strlen(key));
+	// 	size_t keybuf_len = strlen(key);
+	// 	unsigned char *valbuf =  calloc(1,strlen(val));
+	// 	memcpy(valbuf, val, strlen(val));
+	// 	size_t valbuf_len = strlen(val);
+	// 	starkv_put(dev, keybuf, keybuf_len, valbuf, valbuf_len, &err);
+	// 	ret = starkv_get(dev, keybuf, keybuf_len, &sv, &val_len, &err);
+	// 	if(sv) {
+	// 		if ((memcmp(sv, valbuf, val_len) != 0 ))
+	// 			printf("get wrong value:%s--%s\n", sv, valbuf);
+	// 		free(sv);
+	// 		sv = NULL;
+	// 	} else {
+	// 		printf("get:%s  failed\n", keybuf);
+	// 	}
+	// 	free(keybuf);
+	// 	free(valbuf);
+	// }
 	// {
 	// 	char *ckey ="0djljh43dghlys8";
 	// 	ret = starkv_get(dev, ckey, strlen(ckey), &sv, &val_len, &err);
@@ -56,7 +56,24 @@ int main () {
 	// 	} else {
 	// 		printf("get:%s  failed\n", ckey);
 	// 	}
-	// }
+	// // }
+	starkv_iterator_t *sIter = starkv_create_iterator(dev);
+	int scount;
+    while (starkv_iter_next(sIter))
+    {
+		size_t key_len;
+        char *key = starkv_iter_key(sIter, &key_len);
+		if (key)
+        	printf("data:%s--%d\n", key, key_len);
+		size_t val_len;
+        char *val = starkv_iter_value(sIter, &val_len);
+		if (val)
+        	printf("data:%s--%d\n", val, val_len);
+        /* code */
+		scount ++;
+    }
+	printf("%d\n", scount);
+	starkv_iter_destroy(sIter);
     starkv_close(dev);
 	starkv_cleanup(dev);
 	return ret;

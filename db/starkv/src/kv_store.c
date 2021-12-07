@@ -1,152 +1,16 @@
 #include "kv_store.h"
 static int sector_size;
-// static int kv_store_write(kv_dev_t * dev, void *data, size_t data_size, size_t phys_sector_size, size_t offset)
-// {
-// 	bool huge;
-// 	int err = 0;
-// 	__u32 block_count = data_size / phys_sector_size;
-// 	__u32 block_offset = data_size % phys_sector_size;
-// 	__u64 buffer_size = (block_count)*phys_sector_size;
-// 	if (block_offset != 0) {
-// 		buffer_size += phys_sector_size;
-// 	}
-// 	void *buffer = nvme_alloc(buffer_size, sector_size, &huge);
-// 	if (!buffer) {
-// 		fprintf(stderr, "can not allocate io payload\n");
-// 		err = -ENOMEM;
-// 		goto out;
-// 	}
-// 	memset(buffer, 0, buffer_size);
-// 	memcpy(buffer, data, data_size);
-// 	size_t res = pwrite(dev->fd, buffer, buffer_size, offset);
-// 	if (res < 0) {
-// 		fprintf(stderr, "can not pwrite buffer of device \n");
-// 		err = -EFAULT;
-// 		goto out;
-// 	}
-// 	if (buffer)
-// 		nvme_free(buffer, huge);
-// 	return res;
-// out:
-// 	if (buffer)
-// 		nvme_free(buffer, huge);
-// 	return err;
-// }
-
-// static int kv_store_read(kv_dev_t *dev, void *buf, size_t data_size, size_t phys_sector_size, size_t offset)
-// {
-// 	bool huge;
-// 	int err = 0;
-
-// 	__u32 block_count = data_size / phys_sector_size;
-// 	__u32 block_offset = data_size % phys_sector_size;
-// 	__u64 buffer_size = (block_count)*phys_sector_size;
-// 	if (block_offset != 0) {
-// 		buffer_size += phys_sector_size;
-// 	}
-// 	void *buffer = nvme_alloc(buffer_size,sector_size, &huge);
-// 	if (!buffer) {
-// 		fprintf(stderr, "can not allocate io payload\n");
-// 		err = -ENOMEM;
-// 		goto out;
-// 	}
-// 	memset(buffer, 0, buffer_size);
-// 	size_t res = pread(dev->fd, buffer, buffer_size, offset);
-// 	if (res < 0) {
-// 		fprintf(stderr, "can not pwrite buffer of device \n");
-// 		err = -EFAULT;
-// 		goto out;
-// 	}
-// 	memcpy(buf, buffer, data_size);
-// 	if (buffer)
-// 		nvme_free(buffer, huge);
-// 	return res;
-// out:
-// 	if (buffer)
-// 		nvme_free(buffer, huge);
-// 	return err;
-// }
-
-// int kv_read_record_by_offset(kv_dev_t *dev, size_t offset, unsigned char **buf, size_t *buflen){
-// 	int ret;
-// 	bool huge;
-// 	size_t keybuflen, valbuflen;
-//     size_t sector_size = dev->sector_size;
-
-// 	size_t buffer_size = sector_size;
-//     void *rbuffer = nvme_alloc(buffer_size, sector_size, &huge);
-// 	if (!rbuffer) {
-// 		printf("can not allocate io payload\n");
-//         return -1;
-// 	}
-// 	ret = kv_store_read(dev, rbuffer, buffer_size, sector_size, offset);
-// 	record_t *keybuf = (record_t *) rbuffer;
-// 	if (keybuf->watermark != START_MARK) {
-// 		printf("finished\n");
-//         return -1;
-// 	}
-// 	if (keybuf->record_len >= sector_size) {
-// 		nvme_free(rbuffer, huge);
-// 		rbuffer = NULL;
-// 		keybuf = NULL;
-// 		rbuffer = nvme_alloc(keybuf->record_len,sector_size, &huge);
-// 		ret = kv_store_read(dev, rbuffer, buffer_size, sector_size, offset);
-// 		keybuf = (record_t *) rbuffer;
-// 	}
-//     unsigned char *kbuf;
-// 	kbuf = calloc(1, keybuf->record_len);
-// 	memcpy(kbuf, keybuf, keybuf->record_len);
-
-// 	*buf = kbuf;
-// 	*buflen = keybuf->record_len;
-// 	nvme_free(rbuffer, huge);
-// 	return ret;
-// }
-// int kv_read_data_by_offset(kv_dev_t *dev, size_t offset, unsigned char **buf, size_t *buflen){
-// 	int ret;
-// 	bool huge;
-// 	size_t keybuflen, valbuflen;
-//     size_t sector_size = dev->sector_size;
-
-// 	size_t buffer_size = sector_size;
-//     void *rbuffer = nvme_alloc(buffer_size,sector_size, &huge);
-// 	if (!rbuffer) {
-// 		printf("can not allocate io payload\n");
-//         return -1;
-// 	}
-// 	ret = kv_store_read(dev, rbuffer, buffer_size, sector_size, offset);
-// 	record_t *keybuf = (record_t *) rbuffer;
-// 	if (keybuf->record_len >= sector_size) {
-// 		nvme_free(rbuffer, huge);
-// 		rbuffer = NULL;
-// 		keybuf = NULL;
-// 		rbuffer = nvme_alloc(keybuf->record_len, sector_size, &huge);
-// 		ret = kv_store_read(dev, rbuffer, buffer_size, sector_size, offset);
-// 		keybuf = (record_t *) rbuffer;
-// 	}
-//     unsigned char *kbuf;
-// 	kbuf = calloc(1, keybuf->data_len);
-// 	memcpy(kbuf, keybuf->data, keybuf->data_len);
-
-// 	*buf = kbuf;
-// 	*buflen = keybuf->data_len;
-// 	nvme_free(rbuffer, huge);
-// 	return KV_STORE_SUCCESS;
-// }
-
 kv_dev_t *kv_store_open(char *dev)
 {
 	int err, fd;
 	int64_t _ssdSizeByte = 0;
-	
 	struct stat nvme_stat;
 	if ((fd = open(dev, O_RDWR | __O_DIRECT)) < 0)
 		goto open_err;
-	// if((err = fstat(fd, &nvme_stat)) < 0)
-	// 	goto stat_err;
-	// if (!S_ISCHR(nvme_stat.st_mode) && !S_ISBLK(nvme_stat.st_mode))
-	// 	goto dev_err;
-
+	if((err = fstat(fd, &nvme_stat)) < 0)
+		goto stat_err;
+	if (!S_ISCHR(nvme_stat.st_mode) && !S_ISBLK(nvme_stat.st_mode))
+		goto dev_err;
 	if (ioctl(fd, BLKPBSZGET, &sector_size) < 0) {
 		goto ioctl_err;
 	};
@@ -337,4 +201,50 @@ int kv_store_close(kv_dev_t * dev){
 	if (skipListGetSize(dev->memtable->skipList) > 0)
 		mem_flush(dev->fd, dev->memtable);
 	return close(dev->fd);
+}
+
+void *kv_create_iter(kv_dev_t * dev) {
+	KVIterator *iter = malloc(sizeof(KVIterator));
+	iter->fd = dev->fd;
+	iter->siter = skipListCreateIter(dev->memtable->skipList);
+	return (void *)iter;
+}
+void kv_destroy_iter(void* iter) {
+    KVIterator* kIter = (KVIterator *)iter;
+	skipListDestroyIter(kIter->siter);
+	return;
+}
+bool kv_iter_next(void* iter) {
+    KVIterator* kIter = (KVIterator *)iter;
+    return skipListIterNext(kIter->siter);
+}
+char* kv_iter_key(void* iter, size_t* klen) {
+    KVIterator* kIter = (KVIterator *)iter;
+    SSkipListIterator* sIter = (SSkipListIterator *)kIter->siter;
+    SSkipListNode *node = skipListIterGet(sIter);
+	SDataRow sdata = SL_GET_NODE_DATA(node);
+	void *gdata = dataRowTuple(sdata);
+    tstr *da = (tstr*) gdata;
+	char *key = calloc(1, da->len);
+	memcpy(key, da->data, da->len);
+	*klen = da->len;
+    return key;
+}
+char* kv_iter_value(void* iter, size_t* klen) {
+    KVIterator* kIter = (KVIterator *)iter;
+    SSkipListIterator* sIter = (SSkipListIterator *)kIter->siter;
+	int fd = kIter->fd;
+    SSkipListNode *node = skipListIterGet(sIter);
+	SDataRow sdata = SL_GET_NODE_DATA(node);
+	void *gdata = dataRowTuple(sdata);
+    struct v_index * dv = (struct v_index *)(gdata + varDataTLen(gdata));
+	DataBlock *get_block = stardb_get_data_block(fd, dv->value_block_id);
+	SDataRow gbuf = data_block_get_rowdata(get_block, dv->value_offset);
+	int length = dataRowLen(gbuf) - SD_DATA_ROW_HEAD_SIZE;
+	char *buf = calloc(1, length);
+	void *vbuf = dataRowTuple(gbuf);
+	memcpy(buf, vbuf, length);
+	*klen = length;
+	free(get_block);
+	return buf;
 }

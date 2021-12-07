@@ -109,7 +109,7 @@ int mem_flush(int fd, struct mem *mem)
 		}
 		void *gdata = dataRowTuple(sdata);
     	struct v_index * dv = (struct v_index *)(gdata + varDataTLen(gdata));
-		if (dv->value_type != REC_TYPE_KEY_ADD) {
+		if (dv->value_type == REC_TYPE_KEY_ADD) {
 			data_block_add_rowkey(block, sdata);
 			numOfRows++;
 		}
@@ -258,7 +258,7 @@ void mem_print(struct mem *mem) {
 		void *gdata = dataRowTuple(sdata);
         tstr *da = (tstr*) gdata;
         struct v_index *dv = (struct v_index *)(gdata + varDataTLen(gdata));
-		// printf("%s-%d--%d\n", da->data, da->len, dv->value_block_id);
+		printf("%s-%d--%d\n", da->data, da->len, dv->value_block_id);
 		// record_t *s_record = (record_t *)dataRowTuple(sdata);
         // printf("mem:key:%s-keylen:%ld--value_len:%ld\n",  s_record->key,s_record->key_len, s_record->data_len);
         /* code */

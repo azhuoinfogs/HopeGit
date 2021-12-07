@@ -70,6 +70,16 @@ int kv_store_get(kv_dev_t *dev, unsigned char *key, size_t keylen, unsigned char
 bool SaveError(char** errptr, uint32_t status);
 SDataRow kv_prepare_key(unsigned char *key, size_t keylen, int block_id, size_t data_offset, size_t datalen);
 SDataRow kv_prepare_data(unsigned char *data, size_t datalen);
+typedef struct KVIterator {
+	int fd;
+	SSkipListIterator *siter;
+}KVIterator;
+
+void* kv_create_iter(kv_dev_t * dev);
+void  kv_destroy_iter(void* iter);
+bool kv_iter_next(void* siter);
+char* kv_iter_key(void* iter, size_t* klen);
+char* kv_iter_value(void* iter, size_t* klen);
 #ifdef __cplusplus
 }
 #endif
