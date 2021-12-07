@@ -13,7 +13,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "stardef.h"
+#include "os.h"
 #include "compare.h"
 #include "array.h"
 #include "util.h"

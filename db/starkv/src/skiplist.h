@@ -21,7 +21,6 @@ extern "C" {
 #endif
 
 #include "os.h"
-#include "stardef.h"
 #include "array.h"
 
 #define MAX_SKIP_LIST_LEVEL 15

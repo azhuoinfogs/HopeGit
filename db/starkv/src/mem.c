@@ -2,10 +2,10 @@
 #include <stdio.h>
 #include <string.h>
 #include "mem.h"
-char *sdbGetTsTupleKey(const void *data) {
-    record_t *sdata = (record_t *)dataRowTuple(data);
-	return (char *)sdata->key;
-}
+// char *sdbGetTsTupleKey(const void *data) {
+//     record_t *sdata = (record_t *)dataRowTuple(data);
+// 	return (char *)sdata->key;
+// }
 static void mem_destroy(struct mem *pTableData) {
   if (pTableData) {
     skipListDestroy(pTableData->skipList);
@@ -20,7 +20,7 @@ struct mem *mem_create()
 	if (!m) {
 		goto err;
 	}
-	m->skipList = skipListCreate(100, STAR_DATA_TYPE_BINARY, sizeof(int32_t), 0, false, true, sdbGetTsTupleKey);
+	m->skipList = skipListCreate(STAR_DATA_SKIPLIST_LEVEL, STAR_DATA_TYPE_BINARY, sizeof(VarDataOffsetT), 0, 0, true, sdbGetTsTupleKey);
 	if (!m->skipList) {
 		goto err;
 	}
@@ -187,17 +187,15 @@ struct mem *mem_restore(int fd) {
 		void *buf = block->data;
 		size_t offset = 0;
 		while(true) {
-			record_t *record = (record_t *)(buf + offset);
-			if (record->watermark != START_MARK) {
+			SDataRow s_record = (SDataRow )(block->data + offset);
+			void *gdata = dataRowTuple(s_record);
+        	tstr *da = (tstr*) gdata;
+        	struct v_index * dv = (struct v_index *)(gdata + varDataTLen(gdata));
+			if (dv->value_type != REC_TYPE_KEY_ADD) {
 				break;
 			}
-			SDataRow row = kv_prepare_data((void *)record, record->record_len);
-			if (!row) {
-				break;
-			}
-			mem_put(m, row);
-			offset += record->record_len;
-			free(row);
+			mem_put(m, s_record);
+			offset += dataRowLen(s_record);
 		}
 		stardb_erase_data_block(fd, block_id, block);
 		if (block){
@@ -262,8 +260,11 @@ int mem_full(struct mem *memtable, SDataRow row) {
 	return 0;
 }
 
-SDataRow mem_get(struct mem *mem, unsigned char *key) {
-	SArray *nodes = skipListGet(mem->skipList, key);
+SDataRow mem_get(struct mem *mem, unsigned char *key, size_t keylen) {
+	tstr *keybuf =  calloc(1, keylen + sizeof(VarDataLenT));
+	keybuf->len = keylen;
+    memcpy(keybuf->data, key, keylen);
+	SArray *nodes = skipListGet(mem->skipList, (SSkipListKey )keybuf);
     if ((nodes->size == 0) || (!nodes)) {
 		return NULL;
 	}
@@ -279,8 +280,8 @@ void mem_print(struct mem *mem) {
     {
         SSkipListNode *node = skipListIterGet(sIter);
 		SDataRow sdata = SL_GET_NODE_DATA(node);
-		record_t *s_record = (record_t *)dataRowTuple(sdata);
-        printf("mem:key:%s-keylen:%ld--value_len:%ld\n",  s_record->key,s_record->key_len, s_record->data_len);
+		// record_t *s_record = (record_t *)dataRowTuple(sdata);
+        // printf("mem:key:%s-keylen:%ld--value_len:%ld\n",  s_record->key,s_record->key_len, s_record->data_len);
         /* code */
     }
 }

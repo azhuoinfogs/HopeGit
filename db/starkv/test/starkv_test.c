@@ -15,7 +15,7 @@ int main () {
     printf("test kv store\n");
     int ret = 0;
     srand(time(NULL));
-    starkv_t *dev  = starkv_open("/dev/nvme0n1");
+    starkv_t *dev = starkv_open("/dev/nvme0n1");
     starkv_init(dev, 0);
     char key[KSIZE];
 	char val[VSIZE];
@@ -37,7 +37,6 @@ int main () {
 		starkv_put(dev, keybuf, keybuf_len, valbuf, valbuf_len, &err);
 		ret = starkv_get(dev, keybuf, keybuf_len, &sv, &val_len, &err);
 		if(sv) {
-			// printf("get:%s--%s--%ld--%ld\n", valbuf, sv, valbuf_len, val_len);
 			free(sv);
 			sv = NULL;
 		} else {

@@ -51,7 +51,6 @@ DataBlock *stardb_create_data_block(uint32_t block_id)
 	dblock->max_time = 0;
 	dblock->min_time = 0;
 	dblock->row_count = 0;
-	dblock->max_row_size = MAX_ROW_SIZE;
 	dblock->header_size = sizeof(DataBlock);
 	dblock->offset = 0;
 	return dblock;
@@ -82,7 +81,6 @@ void stardb_clear_data_block(int fd, uint32_t block_id, DataBlock *dblock)
 	dblock->max_time = 0;
 	dblock->min_time = 0;
 	dblock->row_count = 0;
-	dblock->max_row_size = MAX_ROW_SIZE;
 	dblock->header_size = sizeof(DataBlock);
 	dblock->offset = 0;
 }
@@ -101,7 +99,6 @@ void stardb_erase_data_block(int fd, uint32_t block_id, DataBlock *dblock)
 	dblock->max_time = 0;
 	dblock->min_time = 0;
 	dblock->row_count = 0;
-	dblock->max_row_size = MAX_ROW_SIZE;
 	dblock->header_size = sizeof(DataBlock);
 	dblock->offset = 0;
 	stardb_store_data_block(fd, dblock);
@@ -137,14 +134,11 @@ SDataRow data_block_get_rowdata(DataBlock *datablock, size_t offset)
 
 int data_block_add_rowkey(DataBlock *datablock, SDataRow data)
 {
-	record_t *s_record = (record_t *)dataRowTuple(data);
-	int64_t time = 0;
-	memcpy(datablock->data + datablock->offset, s_record, s_record->record_len);
-	datablock->offset +=  s_record->record_len;
-	datablock->block.used_size += s_record->record_len;
+	memcpy(datablock->data + datablock->offset, data, dataRowLen(data));
+	datablock->offset += dataRowLen(data);
+	datablock->block.used_size += dataRowLen(data);
 	datablock->block.free_size = (datablock->block.size - datablock->block.used_size);
 	datablock->row_count++;
-	datablock->max_row_size = MAX_ROW_SIZE;
 	return 0;
 }
 
@@ -164,59 +158,56 @@ int print_data_block(DataBlock *dblock) {
 	printf(" header_size :%d\n", dblock->header_size);
 	printf(" max_time :%ld\n", dblock->max_time);
 	printf(" min_time: %ld\n", dblock->min_time);
-	printf(" min_key: %s\n", dblock->min_key);
-	printf(" max_key: %s\n", dblock->max_key);
 	printf(" offset :%d\n", dblock->offset);
 	size_t offset = 0;
 	for (int i = 0; i < dblock->row_count; i++) {
-		record_t *s_record = (record_t *)(dblock->data + offset);
-		if (s_record->watermark != START_MARK) {
-			break;
-		}
-		printf("%s--%d\n", s_record->key, s_record->record_len);
-		offset +=s_record->record_len;
+		SDataRow s_record = (SDataRow )(dblock->data + offset);
+		void *gdata = dataRowTuple(s_record);
+        tstr *da = (tstr*) gdata;
+        struct v_index *dv = (struct v_index *)(gdata + varDataTLen(gdata));
+		offset += dataRowLen(s_record);
 	}
 }
 
-char key_min1[MAX_ROW_SIZE];
-char key_min2[MAX_ROW_SIZE];
-int block_merge(DataBlock *dblock1, DataBlock *dblock2) {
-	DataBlock *dblock3 = stardb_create_data_block(3);
-	DataBlock *dblock4 = stardb_create_data_block(4);
-	memcpy(key_min1, dblock1->min_key, dblock1->max_row_size);
-	memcpy(key_min2, dblock2->min_key, dblock2->max_row_size);
-	record_t out_record;
-	while(1) {
-		int i = 0;
-		int j = 0;
-		if ((i > dblock1->row_count) || (j > dblock2->row_count)){
-			break;
-		}
-		if (data_block_is_full(dblock3, sizeof(out_record))) {
-			break;
-		}
-		size_t i_offset = 0;
-		record_t *s_record = (record_t *)(dblock1->data + i_offset);
-		size_t j_offset = 0;
-		record_t *t_record = (record_t *)(dblock2->data + j_offset);
-		if ((memcmp(s_record->key, key_min1, MAX_ROW_SIZE) < 0) || (memcmp(t_record->key, key_min2, MAX_ROW_SIZE) < 0)) {
-			break;
-		}
-		if (memcmp(s_record->key, key_min2, s_record->key_len) < 0 )
-		{
-			memcpy(out_record.key, key_min2, strlen(key_min2));
-			memcpy(key_min2, s_record->key, s_record->key_len);
-			data_block_add_rowdata(dblock3, (SDataRow)&out_record);
-		}
-		memset(&out_record, 0, sizeof(out_record));
-		if (memcmp(t_record->key, key_min1, t_record->key_len) < 0 )
-		{
-			memcpy(out_record.key, key_min2, strlen(key_min2));
-			memcpy(key_min2, t_record->key, t_record->key_len);
-			data_block_add_rowdata(dblock3, (SDataRow)&out_record);
-		}
-		i_offset += s_record->record_len;
-		j_offset += t_record->record_len;
-	}
-}
+// char key_min1[MAX_ROW_SIZE];
+// char key_min2[MAX_ROW_SIZE];
+// int block_merge(DataBlock *dblock1, DataBlock *dblock2) {
+// 	DataBlock *dblock3 = stardb_create_data_block(3);
+// 	DataBlock *dblock4 = stardb_create_data_block(4);
+// 	memcpy(key_min1, dblock1->min_key, dblock1->max_row_size);
+// 	memcpy(key_min2, dblock2->min_key, dblock2->max_row_size);
+// 	record_t out_record;
+// 	while(1) {
+// 		int i = 0;
+// 		int j = 0;
+// 		if ((i > dblock1->row_count) || (j > dblock2->row_count)){
+// 			break;
+// 		}
+// 		if (data_block_is_full(dblock3, sizeof(out_record))) {
+// 			break;
+// 		}
+// 		size_t i_offset = 0;
+// 		record_t *s_record = (record_t *)(dblock1->data + i_offset);
+// 		size_t j_offset = 0;
+// 		record_t *t_record = (record_t *)(dblock2->data + j_offset);
+// 		if ((memcmp(s_record->key, key_min1, MAX_ROW_SIZE) < 0) || (memcmp(t_record->key, key_min2, MAX_ROW_SIZE) < 0)) {
+// 			break;
+// 		}
+// 		if (memcmp(s_record->key, key_min2, s_record->key_len) < 0 )
+// 		{
+// 			memcpy(out_record.key, key_min2, strlen(key_min2));
+// 			memcpy(key_min2, s_record->key, s_record->key_len);
+// 			data_block_add_rowdata(dblock3, (SDataRow)&out_record);
+// 		}
+// 		memset(&out_record, 0, sizeof(out_record));
+// 		if (memcmp(t_record->key, key_min1, t_record->key_len) < 0 )
+// 		{
+// 			memcpy(out_record.key, key_min2, strlen(key_min2));
+// 			memcpy(key_min2, t_record->key, t_record->key_len);
+// 			data_block_add_rowdata(dblock3, (SDataRow)&out_record);
+// 		}
+// 		i_offset += s_record->record_len;
+// 		j_offset += t_record->record_len;
+// 	}
+// }
 

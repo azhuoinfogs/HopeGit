@@ -9,7 +9,6 @@ OBJS =  ./src/array.c\
 		./src/status.c\
 		./src/skiplist.c\
 		./src/util.c\
-		./src/meta.c\
 		./src/mem.c\
 		./src/debug.c\
 		./src/bitmap.c\
@@ -19,7 +18,6 @@ OBJS =  ./src/array.c\
 SKIPLIST_TEST_OBJS =  ./test/skiplist_test.c
 STARKV_TEST_OBJS =  ./test/starkv_test.c
 MEM_TEST_OBJS =  ./test/mem_test.c
-META_TEST_OBJS =  ./test/meta_test.c
 BIT_TEST_OBJS =  ./test/bitmap_test.c
 BLOCK_TEST_OBJS =  ./test/datablock_test.c
 LIBRARY = ./libstarkv.so
@@ -40,8 +38,6 @@ skiplist_test:
 	$(CC)  $(SKIPLIST_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -g -o ./bin/skip_test
 mem_test:
 	$(CC)  $(MEM_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -g -o ./bin/mem_test
-meta_test:
-	$(CC)  $(META_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -g -o ./bin/meta_test
 bit_test:
 	$(CC)  $(BIT_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -g -o ./bin/bit_test
 block_test:

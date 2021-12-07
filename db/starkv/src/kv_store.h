@@ -1,40 +1,27 @@
-#ifndef _LIB_NVMED_H
-#define _LIB_NVMED_H
+#ifndef _KV_STORE_H
+#define _KV_STORE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include<inttypes.h>
-#include<assert.h>
-#include<unistd.h>
-#include<sys/stat.h>
-#include<fcntl.h>
-#include<sys/ioctl.h>
-#include<linux/fs.h>
-#include<errno.h>
-#include<stdbool.h>
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
 #include "skiplist.h"
 #include "util.h"
-#include "meta.h"
-#include "os.h"
 #include "data_block.h"
 #include "bitmap.h"
 #include "mem.h"
 #include "debug.h"
+#define MAX_SHORT_VAL_LEN 16777215
+#define ZS_KEY_BASE_REC_SIZE 24
+#define ZS_VAL_BASE_REC_SIZE 16
+#define MAX_KEY_LEN 512
 typedef struct kv_dev{
     int fd;
     int create_as_new;
     int64_t ssd_size;
     int sector_size;
-	uint32_t cur_block_id;
-    struct meta *meta;
     struct mem *memtable;
 	BITS bits;
 }kv_dev_t;
-
 enum {
 	KV_STORE_SUCCESS			= 0x0,
 	KV_STORE_ERROR		        = 0x1,
@@ -50,6 +37,16 @@ enum {
 	KV_STORE_BLOCK_FULL		    = 0x11,
 	KV_STORE_ERROR_BITMAP		= 0x12,
 };
+enum record_type_t {
+        REC_TYPE_KEY_DEL             =  0,
+        REC_TYPE_KEY_ADD             =  1
+};
+typedef struct v_index{
+    int value_type;
+    int value_block_id;
+    int value_len;
+    int value_offset;
+}v_index;
 kv_dev_t *kv_store_open(char *devname);
 int kv_store_init(kv_dev_t *dev, int create_as_new);
 int kv_store_close(kv_dev_t *dev);

@@ -1,11 +1,26 @@
-#ifndef _SSDB_BITMAP_H
-#define _SSDB_BITMAP_H
+#ifndef _KV_BITMAP_H
+#define _KV_BITMAP_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 #include "os.h"
-#include "kv_store.h"
+#define BITMAP_BLOCK_SIZE 128*1024
+typedef struct BitBlock {
+	struct Block block;
+	uint32_t bitLength;
+	char data[];
+} BitBlock;
+typedef struct _Bits {
+	uint32_t total_blocks; // 100
+	uint32_t free_blocks;
+	uint32_t used_blocks;
+	uint32_t num_of_bits;
+	uint32_t num_of_bytes;
+	pthread_mutex_t mutex;
+	char bits[];
+} Bits;
+typedef Bits* BITS;
 /**
  *create a new bitmap
  *@dev nvme disk device name

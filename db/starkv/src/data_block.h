@@ -4,9 +4,18 @@
 extern "C" {
 #endif
 #include "os.h"
-typedef void *SDataRow;
-#define MAX_ROW_SIZE 1024
 #define DATA_BLOCK_SIZE (128 * 1024)
+#define SECTOR_SIZE 512
+typedef struct DataBlock {
+	Block block;
+	uint32_t row_count;
+	uint32_t max_row_size;
+	uint32_t header_size;
+	int64_t max_time;
+	int64_t min_time;
+	uint32_t offset;
+	char data[];
+}DataBlock;
 extern int stardb_store_data_block(int fd, struct DataBlock *dblock);
 extern int stardb_read_data_block(int fd, struct DataBlock *dblock);
 extern DataBlock *stardb_create_data_block(uint32_t block_id);

@@ -1,6 +1,4 @@
-#include "os.h"
 #include "bitmap.h"
-#include <linux/fs.h>
 BITS bit_create(int fd)
 {
 	int64_t ssdSizeBytes;
