@@ -172,6 +172,22 @@ open_err:
 int check_dev(kv_dev_t *dev) {
 	return 0;
 }
+int check_dev_write(kv_dev_t *dev) {
+	DataBlock *blk = dev->w_block;
+	if (!blk) {
+		return -1;
+	}
+	struct mem *memtable = dev->memtable;
+	if (!memtable) {
+		return -1;
+	}
+	if((blk->block.type != STAR_BLOCK_TYPE_DATA)\
+        || (blk->block.size != DATA_BLOCK_SIZE) || (blk->block.start_address != (blk->block.id * DATA_BLOCK_SIZE))\
+        || (blk->block.end_address != ((blk->block.id + 1) * DATA_BLOCK_SIZE))){
+		return	-1;
+    }
+	return 0;
+}
 void kv_store_free(kv_dev_t * dev){
 	if (dev->bits)
 		free(dev->bits);
@@ -226,21 +242,13 @@ SDataRow kv_prepare_data(unsigned char *data, size_t datalen)
 
 int kv_store_put(kv_dev_t *dev, unsigned char *key, size_t keylen, unsigned char *data, size_t datalen, char **errptr) {
 	int ret = KV_STORE_SUCCESS;
-	uint32_t block_id;
-	if ((check_dev(dev) < 0) || !key || !data || (keylen == 0) || (datalen == 0) ){
+	if ((check_dev_write(dev) < 0) || !key || !data || (keylen == 0) || (datalen == 0) ){
 		ret = KV_STORE_INVALID_PARAMETER;
 		goto err;
 	}
-	block_id = get_available_block_id(dev->bits, STAR_BLOCK_TYPE_DATA);
-	if ((block_id < STAR_DATA_BLOCKID_START) || (block_id > STAR_DATA_BLOCKID_END)) {
-		ret = KV_STORE_INVALID_PARAMETER;
-		goto err;	
-	}
-	DataBlock *block = stardb_get_data_block(dev->fd, block_id);
-	if(!block){
-		ret = KV_STORE_INVALID_PARAMETER;
-		goto err;	
-	}
+	DataBlock *block = dev->w_block;
+	uint32_t block_id = block->block.id;
+	struct mem *memtable = dev->memtable;
 	SDataRow rowdata = kv_prepare_data(data, datalen);
 	if (data_block_is_full(block, dataRowLen(rowdata))) {
 		stardb_store_data_block(dev->fd, block);
@@ -256,9 +264,8 @@ int kv_store_put(kv_dev_t *dev, unsigned char *key, size_t keylen, unsigned char
 	free(rowdata);
 	stardb_store_data_block(dev->fd, block);
 	SDataRow rowkey = kv_prepare_key(key, keylen, block_id, offset, datalen);
-	ret = mem_put(dev->memtable, rowkey);
+	ret = mem_put(memtable, rowkey);
 	free(rowkey);
-	free(block);
 err:
 	SaveError(errptr, ret);
 	return ret;
@@ -307,6 +314,20 @@ int kv_store_init(kv_dev_t *dev, int create_as_new){
 		goto err;
 	}
 	dev->memtable = mem_restore(dev->fd);
+	if (!dev->memtable) {
+		ret = KV_STORE_ERROR_SKIPLIST;
+		goto err;
+	}
+	int block_id = get_available_block_id(dev->bits, STAR_BLOCK_TYPE_DATA);
+	if ((block_id < STAR_DATA_BLOCKID_START) || (block_id > STAR_DATA_BLOCKID_END)) {
+			ret = KV_STORE_INVALID_PARAMETER;
+			goto err;	
+	}
+	dev->w_block = stardb_get_data_block(dev->fd, block_id);
+	if(!dev->w_block){
+		ret = KV_STORE_INVALID_PARAMETER;
+		goto err;	
+	}
 err:
 	return ret;
 }

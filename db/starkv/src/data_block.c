@@ -144,7 +144,7 @@ int data_block_add_rowkey(DataBlock *datablock, SDataRow data)
 
 int data_block_is_full(struct DataBlock *datablock, uint32_t rowsize)
 {
-	if ((datablock->offset + rowsize >= datablock->block.size)) {
+	if ((datablock->offset + datablock->header_size + rowsize >= datablock->block.size)) {
 		return 1;
 	}
 	return 0;
@@ -165,6 +165,7 @@ int print_data_block(DataBlock *dblock) {
 		void *gdata = dataRowTuple(s_record);
         tstr *da = (tstr*) gdata;
         struct v_index *dv = (struct v_index *)(gdata + varDataTLen(gdata));
+		printf("%s-%d\n", da->data, da->len);
 		offset += dataRowLen(s_record);
 	}
 }

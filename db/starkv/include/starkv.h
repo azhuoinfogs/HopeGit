@@ -32,18 +32,6 @@ typedef void starkv_readoptions_t;
 typedef void starkv_iterator_t;
 typedef void starkv_t;
 // Data type definition
-#define STAR_DATA_TYPE_NULL       0     // 1 bytes
-#define STAR_DATA_TYPE_BOOL       1     // 1 bytes
-#define STAR_DATA_TYPE_TINYINT    2     // 1 byte
-#define STAR_DATA_TYPE_SMALLINT   3     // 2 bytes
-#define STAR_DATA_TYPE_INT        4     // 4 bytes
-#define STAR_DATA_TYPE_BIGINT     5     // 8 bytes
-#define STAR_DATA_TYPE_FLOAT      6     // 4 bytes
-#define STAR_DATA_TYPE_DOUBLE     7     // 8 bytes
-#define STAR_DATA_TYPE_BINARY     8     // string
-#define STAR_DATA_TYPE_TIMESTAMP  9     // 8 bytes
-#define STAR_DATA_TYPE_NCHAR      10    // unicode string
-
 #ifdef _TD_GO_DLL_
   #define DLL_EXPORT    __declspec(dllexport)
 #else

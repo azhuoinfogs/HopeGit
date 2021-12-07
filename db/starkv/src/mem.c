@@ -98,7 +98,6 @@ int mem_flush(int fd, struct mem *mem)
 		goto err;	
 	}
 	int block_id = STAR_MEM_START;
-
     while (skipListIterNext(sIter))
     {
         SSkipListNode *node = skipListIterGet(sIter);
@@ -108,8 +107,12 @@ int mem_flush(int fd, struct mem *mem)
 			block_id++;
 			stardb_clear_data_block(fd, block_id, block);
 		}
-		data_block_add_rowkey(block, sdata);
-		numOfRows++;
+		void *gdata = dataRowTuple(sdata);
+    	struct v_index * dv = (struct v_index *)(gdata + varDataTLen(gdata));
+		if (dv->value_type != REC_TYPE_KEY_ADD) {
+			data_block_add_rowkey(block, sdata);
+			numOfRows++;
+		}
     }
   	ret = stardb_store_data_block(fd, block);
   	if (ret < 0) {
@@ -186,6 +189,7 @@ struct mem *mem_restore(int fd) {
 		}
 		void *buf = block->data;
 		size_t offset = 0;
+		size_t count = 0;
 		while(true) {
 			SDataRow s_record = (SDataRow )(block->data + offset);
 			void *gdata = dataRowTuple(s_record);
@@ -195,9 +199,9 @@ struct mem *mem_restore(int fd) {
 				break;
 			}
 			mem_put(m, s_record);
+			count ++;
 			offset += dataRowLen(s_record);
 		}
-		stardb_erase_data_block(fd, block_id, block);
 		if (block){
 			stardb_free_data_block(block);
 		}
@@ -223,35 +227,6 @@ int mem_put(struct mem *mem, SDataRow row) {
 	mem->mem_size += mem_size;
 err:
 	return ret;
-}
-SDataRow mem_put_and_pop_max(struct mem *mem, SDataRow row) {
-	int ret = KV_STORE_SUCCESS;
-	int32_t level = 0;
-    int32_t headSize = 0;
-	size_t datalen = 0;
-	skipListNewNodeInfo(mem->skipList, &level, &headSize);
-	size_t mem_size = headSize + dataRowLen(row);
-	SSkipListNode *pNode = calloc(1, mem_size);
-	if (pNode == NULL) {
-		ret = KV_STORE_INVALID_MALLOC;
-		goto err;
-    }
-    pNode->level = level;
-	dataRowCpy(SL_GET_NODE_DATA(pNode), row);
-    skipListPut(mem->skipList, pNode);
-	mem->mem_size += mem_size;
-
-	SSkipListNode *pmaxNode = SL_GET_BACKWARD_POINTER((mem->skipList)->pTail, 0);
-	SDataRow sdata = SL_GET_NODE_DATA(pmaxNode);
-	datalen = dataRowLen(sdata);
-
-	SDataRow pdata = calloc (1, datalen);
-	memcpy(pdata, sdata, datalen);
-	skipListRemoveNode(mem->skipList, pmaxNode);
-	mem->mem_size -= datalen;
-	return pdata;
-err:
-	return  NULL;
 }
 int mem_full(struct mem *memtable, SDataRow row) {
 	if ((memtable->mem_size + dataRowLen(row)) >= DATA_BLOCK_SIZE) {
@@ -280,6 +255,10 @@ void mem_print(struct mem *mem) {
     {
         SSkipListNode *node = skipListIterGet(sIter);
 		SDataRow sdata = SL_GET_NODE_DATA(node);
+		void *gdata = dataRowTuple(sdata);
+        tstr *da = (tstr*) gdata;
+        struct v_index *dv = (struct v_index *)(gdata + varDataTLen(gdata));
+		// printf("%s-%d--%d\n", da->data, da->len, dv->value_block_id);
 		// record_t *s_record = (record_t *)dataRowTuple(sdata);
         // printf("mem:key:%s-keylen:%ld--value_len:%ld\n",  s_record->key,s_record->key_len, s_record->data_len);
         /* code */

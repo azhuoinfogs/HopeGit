@@ -82,6 +82,13 @@
         "resource.h": "c",
         "skiplist.h": "c",
         "compare.h": "c",
-        "util.h": "c"
+        "util.h": "c",
+        "stardef.h": "c",
+        "eventfd.h": "c",
+        "mem.h": "c",
+        "meta.h": "c",
+        "debug.h": "c",
+        "fs.h": "c",
+        "starkv.h": "c"
     }
 }
