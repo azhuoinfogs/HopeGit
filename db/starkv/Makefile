@@ -33,21 +33,22 @@ uninstall:
 	rm $(INSTALL_PATH)/lib/libstarkv.so
 	rm $(INSTALL_PATH)/include/starkv.h
 starkv_test:
-	$(CC)  $(STARKV_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -ldl -g -o ./bin/starkv_test
+	$(CC)  $(STARKV_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -ldl -g -o ./test/starkv_test
 skiplist_test:
-	$(CC)  $(SKIPLIST_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -g -o ./bin/skip_test
+	$(CC)  $(SKIPLIST_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -g -o ./test/skip_test
 mem_test:
-	$(CC)  $(MEM_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -g -o ./bin/mem_test
+	$(CC)  $(MEM_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -g -o ./test/mem_test
 bit_test:
-	$(CC)  $(BIT_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -g -o ./bin/bit_test
+	$(CC)  $(BIT_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -g -o ./test/bit_test
 block_test:
-	$(CC)  $(BLOCK_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -g -o ./bin/block_test
+	$(CC)  $(BLOCK_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -g -o ./test/block_test
 bench:
-	$(CC) bench/bench.c  -lstarkv -o ./bin/bench
+	$(CC) bench/bench.c  -lstarkv -o ./bench/kv_bench
 .PHONY:clean
 clean:
 	-rm -f $(LIBRARY)
-	-rm -f ./bin/starkv_test
-	-rm -f ./bin/skip_test
-	-rm -f ./bin/mem_test
-	-rm -f ben
+	-rm -f ./test/starkv_test
+	-rm -f ./test/skip_test
+	-rm -f ./test/bit_test
+	-rm -f ./test/mem_test
+	-rm -f ./bench/kv_bench
