@@ -1,9 +1,9 @@
 #include "kv_store.h"
-static int sector_size;
 kv_dev_t *kv_store_open(char *dev)
 {
 	int err, fd;
-	int64_t _ssdSizeByte = 0;
+	int64_t ssdSizeByte = 0;
+	int sector_size;
 	struct stat nvme_stat;
 	if ((fd = open(dev, O_RDWR | __O_DIRECT)) < 0)
 		goto open_err;
@@ -14,7 +14,7 @@ kv_dev_t *kv_store_open(char *dev)
 	if (ioctl(fd, BLKPBSZGET, &sector_size) < 0) {
 		goto ioctl_err;
 	};
-	if (ioctl(fd, BLKGETSIZE64, &_ssdSizeByte) < 0) {
+	if (ioctl(fd, BLKGETSIZE64, &ssdSizeByte) < 0) {
 		goto ioctl_err;
 	}
 	kv_dev_t *sdev = (kv_dev_t *)malloc(sizeof(kv_dev_t));
@@ -23,7 +23,7 @@ kv_dev_t *kv_store_open(char *dev)
 	}
 	sdev->fd = fd;
 	sdev->sector_size = sector_size;
-	sdev->ssd_size = _ssdSizeByte;
+	sdev->ssd_size = ssdSizeByte;
 	return sdev;
 ioctl_err:
 dev_err:
@@ -166,7 +166,7 @@ err:
 	SaveError(errptr, ret);
 	return ret;
 }
-int kv_store_init(kv_dev_t *dev, int create_as_new){
+int kv_store_init(kv_dev_t *dev){
 	int ret = KV_STORE_SUCCESS;
 	if (check_dev(dev) < 0) {
 		ret = KV_STORE_INVALID_PARAMETER;

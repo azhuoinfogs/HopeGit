@@ -3,9 +3,9 @@
 starkv_t *starkv_open(char *dev) {
     return (starkv_t*) kv_store_open(dev);
 }
-int starkv_init(starkv_t *dev, int create_as_new) {
+int starkv_init(starkv_t *dev) {
     kv_dev_t* kdev = (kv_dev_t *)dev;
-    return kv_store_init(kdev, create_as_new);
+    return kv_store_init(kdev);
 }
 int starkv_close(starkv_t *dev) {
     kv_dev_t* kdev = (kv_dev_t *)dev;

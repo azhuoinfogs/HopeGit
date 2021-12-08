@@ -14,22 +14,13 @@ extern "C" {
 #define ZS_KEY_BASE_REC_SIZE 24
 #define ZS_VAL_BASE_REC_SIZE 16
 #define MAX_KEY_LEN 512
-#define STAR_DATA_TYPE_NULL       0     // 1 bytes
-#define STAR_DATA_TYPE_BOOL       1     // 1 bytes
-#define STAR_DATA_TYPE_TINYINT    2     // 1 byte
-#define STAR_DATA_TYPE_SMALLINT   3     // 2 bytes
-#define STAR_DATA_TYPE_INT        4     // 4 bytes
-#define STAR_DATA_TYPE_BIGINT     5     // 8 bytes
-#define STAR_DATA_TYPE_FLOAT      6     // 4 bytes
-#define STAR_DATA_TYPE_DOUBLE     7     // 8 bytes
-#define STAR_DATA_TYPE_BINARY     8     // string
-#define STAR_DATA_TYPE_TIMESTAMP  9     // 8 bytes
-#define STAR_DATA_TYPE_NCHAR      10    // unicode string
 typedef struct kv_dev{
     int fd;
     int create_as_new;
     int64_t ssd_size;
     int sector_size;
+    int block_size;
+	int64_t total_blocks;
 	DataBlock *w_block;
     struct mem *memtable;
 	BITS bits;
@@ -60,7 +51,7 @@ typedef struct v_index{
     int value_offset;
 }v_index;
 kv_dev_t *kv_store_open(char *devname);
-int kv_store_init(kv_dev_t *dev, int create_as_new);
+int kv_store_init(kv_dev_t *dev);
 int kv_store_close(kv_dev_t *dev);
 void kv_store_free(kv_dev_t * dev);
 int kv_store_flush(kv_dev_t *dev);

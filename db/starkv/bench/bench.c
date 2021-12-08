@@ -209,7 +209,7 @@ int main(int argc, char* argv[])
 	starkv_t *idx;
 	int create_as_new = 1;
 	idx = starkv_open("/dev/nvme0n1");
-	starkv_init(idx, 1);
+	starkv_init(idx);
 	if (strcmp(argv[1], "write") == 0) {
 		count = atoi(argv[2]);
 		_print_header(count);

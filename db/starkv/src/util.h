@@ -1,10 +1,6 @@
 #ifndef _LIB_UTIL_H
 #define _LIB_UTIL_H
-#include<stdlib.h>
-#include<stdio.h>
-#include<stdbool.h>
-#include<assert.h>
-#include<string.h>
+#include "os.h"
 #pragma once
 #define CMD_BUF_LENGTH ((128)*(1024))
 #define ALL_BUF_LENGTH ((256)*(1024))			//128k is enough

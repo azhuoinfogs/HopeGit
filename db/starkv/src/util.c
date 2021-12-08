@@ -54,3 +54,30 @@ void d_raw(unsigned char *buf, unsigned len)
 	for (i = 0; i < len; i++)
 		putchar(*(buf+i));
 }
+
+int tSystem(const char * cmd) 
+{ 
+  FILE * fp; 
+  int res; 
+  char buf[1024]; 
+  if (cmd == NULL) { 
+    printf("tSystem cmd is NULL!\n");
+    return -1;
+  } 
+  
+  if ((fp = popen(cmd, "r") ) == NULL) { 
+    printf("popen cmd:%s error: %s/n", cmd, strerror(errno)); 
+    return -1; 
+  } else {
+    while(fgets(buf, sizeof(buf), fp))  { 
+      printf("popen result:%s", buf); 
+    } 
+
+    if ((res = pclose(fp)) == -1) { 
+      printf("close popen file pointer fp error!\n");
+    } else { 
+      printf("popen res is :%d\n", res);
+    }
+    return res;
+  }
+}
