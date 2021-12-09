@@ -108,4 +108,6 @@ typedef uint64_t quint64;
 void d_raw(unsigned char *buf, unsigned len);
 void nvme_free(void *p, bool huge);
 void *nvme_alloc(size_t len, int basesize, bool *huge);
+int tSystem(const char * cmd);
+int create_ns(char *devname, size_t lba_count);
 #endif /* _LIB_NVMED_H */

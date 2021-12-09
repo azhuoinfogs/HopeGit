@@ -19,13 +19,12 @@ struct mem{
     int64_t mem_size;
 };
 struct mem *mem_create();
-struct mem * mem_restore(int fd);
-int mem_flush(int fd, struct mem *mem);
+struct mem * mem_restore(int fd, uint32_t block_start, uint32_t block_end);
+int mem_flush(int fd, struct mem *mem, uint32_t blockid_start, uint32_t blockid_end);
 int mem_recreate(struct mem *mem);
+int mem_destroy(struct mem *mem);
 int mem_put(struct mem *mem, SDataRow row);
 SDataRow mem_get(struct mem *mem, unsigned char *key, size_t keylen);
 int mem_full(struct mem *mem, SDataRow row);
 void mem_print(struct mem *mem);
-SDataRow mem_get_max(struct mem *mem);
-SDataRow mem_put_and_pop_max(struct mem *mem, SDataRow row);
 #endif

@@ -17,6 +17,10 @@ typedef struct _Bits {
 	uint32_t used_blocks;
 	uint32_t num_of_bits;
 	uint32_t num_of_bytes;
+	uint32_t bit_of_blocks;
+	uint32_t bit_of_size;
+	uint32_t bit_blockid_start;
+	uint32_t bit_blockid_end;
 	pthread_mutex_t mutex;
 	char bits[];
 } Bits;
@@ -47,14 +51,16 @@ uint32_t bit_length(BITS bit);
  *@bit bitmap
  *@return return saved bitmap bytes length, if return -1, means failed to write; 
 **/
-uint32_t bit_save(int fd, BITS bit);
+uint32_t bit_save(int fd, BITS bit, uint32_t blockid_start, uint32_t blockid_end);
 
 /**
  *Get bitmap from name ssd device
  *@dev nvme disk device name
  *@return return a bitmap, if return NULL, means failed to read; 
 **/
-BITS bit_read(int fd);
+// BITS bit_read(int fd);
+BITS bit_read(int fd, uint32_t blockid_start, uint32_t blockid_end);
+
 /**
  *Erase bitmap in ssd device
  *@dev nvme disk device name
@@ -95,8 +101,8 @@ bool bit_get_block_status(BITS bit, uint32_t id);
  *@status true of false
  *@return block id, if return -1, means get failed; 
 **/
-uint32_t get_available_block_id(BITS bit, enum BlockType type);
-
+// uint32_t get_available_block_id(BITS bit, enum BlockType type);
+uint32_t get_available_block_id(BITS bit, enum BlockType type, uint32_t blockid_start, uint32_t blockid_end);
 /**
  *bitmap init
  *@dev nvme disk device name

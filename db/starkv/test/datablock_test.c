@@ -1,5 +1,7 @@
 #include "../src/data_block.h"
 #include "../src/skiplist.h"
+#include "../src/kv_store.h"
+#include "starkv.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -20,71 +22,44 @@ char *getkey(const void *data)
 
 int main () {
     printf("test datablock \n");
-    srand(time(NULL));
+    char *devname = "/dev/nvme0";
+    int dbindex = starkv_create_database(devname, "test.db", 1073741824, 1, 10);
+    char dev[32] = {0};
+    // int dbindex = 8;
+    (void)snprintf(dev, 32, "%sn%d", devname, dbindex);
     int fd;
-    if ((fd = open(DEV_NAME, O_RDWR | __O_DIRECT)) < 0) {
+    if ((fd = open(dev, O_RDWR | __O_DIRECT)) < 0) {
         printf("open failed:%s\n", DEV_NAME);
         return -1;
     }
-    SSkipList *db_skipList = NULL;
-    if (db_skipList == NULL)
-		db_skipList = skipListCreate(100, STAR_DATA_TYPE_BINARY, sizeof(int32_t), 0, false, true, getkey);
-	if (db_skipList == NULL) {
-		return -1;
-	}
-
-    // stardb_clear_data_block(fd, 0, datablock1);
-    DataBlock *datablock1 = stardb_create_data_block(1);
+    dev_header_t header;
+    header.bit_blockid_end = 1;
+    header.bit_blockid_start = 1;
+    header.mem_blockid_end = 1;
+    header.mem_blockid_start = 1;
+    header.data_blockid_end = 1;
+    header.data_blockid_start = 1;
+    strcpy(header.devname, dev);
+    strcpy(header.dbname, "test.db");
+    header.db_id = dbindex;
+    DataBlock *datablock1 = stardb_create_data_block(0);
     if (!datablock1) {
         printf("stardb_get_data_block failed\n");
     }
-    DataBlock *datablock2 = stardb_create_data_block(2);
-    if (!datablock2) {
-        printf("stardb_get_data_block failed\n");
-    }
-    // stardb_clear_data_block(fd, 0, datablock1);
-    char key[31];
-    while(1) {
-        _random_key(key, 31);
-        record_t record;
-        record.watermark = START_MARK;
-        record.data_block_id = 1;
-        record.record_type = 0;
-        record.record_len = sizeof(record);
-        record.key_len = strlen(key);
-        record.data_len = 0;
-        record.data_offset = 0;
-        strcpy(record.key, key);
-        if (data_block_is_full(datablock1, sizeof(record_t))) {
-            printf("block is full\n");
-            // stardb_store_data_block(fd, datablock1);
-            break;
-        }
-        data_block_add_rowdata(datablock1, (SDataRow)&record);
-        memset(key, 0, 31);
-        memset(&record, 0, sizeof(record));
-    }
-    while(1) {
-        _random_key(key, 31);
-        record_t record;
-        record.watermark = START_MARK;
-        record.data_block_id = 2;
-        record.record_type = 0;
-        record.record_len = sizeof(record);
-        record.key_len = strlen(key);
-        record.data_len = 0;
-        record.data_offset = 0;
-        strcpy(record.key, key);
-        if (data_block_is_full(datablock2, sizeof(record_t))) {
-            printf("block is full\n");
-            // stardb_store_data_block(fd, datablock1);
-            break;
-        }
-        data_block_add_rowdata(datablock2, (SDataRow)&record);
-        memset(key, 0, 31);
-        memset(&record, 0, sizeof(record));
-        
-    }
+    memcpy(datablock1->data, &header, sizeof(dev_header_t));
+    // stardb_store_data_block(fd, datablock1);
+    // free(datablock1);
+    // close(fd);
+    // int fd2;
+    // if ((fd2 = open(devname, O_RDWR | __O_DIRECT)) < 0) {
+    //     printf("open failed:%s\n", DEV_NAME);
+    //     return -1;
+    // }
+    DataBlock *datablock2 = stardb_restore_data_block(fd, 0);
+    dev_header_t header1;
+    memcpy(&header1, datablock2->data, sizeof(dev_header_t));
+    printf("%d--%s\n", header1.db_id, header1.devname);
+    free(datablock2);
     // print_data_block(datablock1);
     // print_data_block(datablock2);
 }

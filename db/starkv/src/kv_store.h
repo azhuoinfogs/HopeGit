@@ -14,15 +14,28 @@ extern "C" {
 #define ZS_KEY_BASE_REC_SIZE 24
 #define ZS_VAL_BASE_REC_SIZE 16
 #define MAX_KEY_LEN 512
+#define BLOCK_END 0xFFFFFFFF
+typedef struct dev_header {
+    int64_t  ssd_size;
+	int64_t  total_blocks;
+	uint32_t sector_size;
+    uint32_t block_size;
+	uint32_t bit_blockid_start;
+	uint32_t bit_blockid_end;
+	uint32_t mem_blockid_start;
+	uint32_t mem_blockid_end;
+	uint32_t data_blockid_start;
+	uint32_t data_blockid_end;
+	uint32_t db_id;
+	char dbname[32];
+	char devname[32];
+}dev_header_t;
+
 typedef struct kv_dev{
-    int fd;
-    int create_as_new;
-    int64_t ssd_size;
-    int sector_size;
-    int block_size;
-	int64_t total_blocks;
-	DataBlock *w_block;
-    struct mem *memtable;
+	int fd;
+	dev_header_t *header;
+	DataBlock    *w_block;
+    struct mem   *memtable;
 	BITS bits;
 }kv_dev_t;
 enum {
@@ -50,10 +63,14 @@ typedef struct v_index{
     int value_len;
     int value_offset;
 }v_index;
-kv_dev_t *kv_store_open(char *devname);
-int kv_store_init(kv_dev_t *dev);
-int kv_store_close(kv_dev_t *dev);
-void kv_store_free(kv_dev_t * dev);
+kv_dev_t *kv_store_open(char *dev);
+kv_dev_t *kv_create_dev(char *dev, char *dbname, int dbindex);
+kv_dev_t *kv_restore_dev(char *dev, int nsid);
+int kv_init_dev(kv_dev_t *dev, int radio);
+dev_header_t * kv_restore_devheader(int fd);
+int kv_store_devheader(kv_dev_t *dev);
+int kv_close_dev(kv_dev_t *dev);
+void kv_destroy_dev(kv_dev_t * dev);
 int kv_store_flush(kv_dev_t *dev);
 int kv_store_restore(kv_dev_t *dev);
 int kv_store_put(kv_dev_t *dev, unsigned char *key, size_t keylen,unsigned char *data, size_t datalen, char **errptr);

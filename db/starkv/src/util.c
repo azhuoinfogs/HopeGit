@@ -54,7 +54,21 @@ void d_raw(unsigned char *buf, unsigned len)
 	for (i = 0; i < len; i++)
 		putchar(*(buf+i));
 }
-
+int get_nsid(char *res) {
+	int i = 0;
+	int found = 0;
+    while (res[i] != '\0') {
+        if (res[i] >= '0' && res[i] <= '9') {
+            found = 1;
+            break;
+        }
+        i++;
+    }
+	if (found)
+		return (res[i] - '0');
+	else
+		return -1;
+}
 int tSystem(const char * cmd) 
 { 
   FILE * fp; 
@@ -69,15 +83,50 @@ int tSystem(const char * cmd)
     printf("popen cmd:%s error: %s/n", cmd, strerror(errno)); 
     return -1; 
   } else {
-    while(fgets(buf, sizeof(buf), fp))  { 
-      printf("popen result:%s", buf); 
+    while(fgets(buf, sizeof(buf), fp))  {
     } 
 
     if ((res = pclose(fp)) == -1) { 
       printf("close popen file pointer fp error!\n");
-    } else { 
-      printf("popen res is :%d\n", res);
+    } else {
+		res = get_nsid(buf);
     }
     return res;
   }
+}
+int create_ns(char *devname, size_t lba_count) {
+  if ((strlen(devname) == 0) || (lba_count == 0)) {
+    printf("create_ns not enabled");
+    return -1;
+  }
+  char shellCmd[1024+1] = {0};
+  //(void)snprintf(shellCmd, 1024, "cp -rf %s %s", srcDir, destDir);
+  (void)snprintf(shellCmd, 1024, "nvme create-ns %s -s %ld -c %ld -f 0 -m 0 -d 0", devname, lba_count, lba_count);
+  int nsid = tSystem(shellCmd);
+  if (nsid < 0) {
+	printf("create_ns failed\n");
+    return -1;
+  }
+  memset(shellCmd, 0, sizeof(shellCmd));
+  (void)snprintf(shellCmd, 1024, "nvme attach-ns %s -c 0x1200 -n %d", devname, nsid);
+  nsid = tSystem(shellCmd);
+  if (nsid < 0) {
+	printf("create_ns failed\n");
+    return -1;
+  }
+  return nsid;
+}
+int delete_ns(char *devname, int nsid) {
+  if ((strlen(devname) == 0)) {
+    printf("delete_ns not enabled");
+    return -1;
+  }
+  char shellCmd[1024+1] = {0};
+  (void)snprintf(shellCmd, 1024, "nvme delete-ns %s -n %d", devname, nsid);
+  nsid = tSystem(shellCmd);
+  if (nsid < 0) {
+	printf("delete_ns failed\n");
+    return -1;
+  }
+  return nsid;
 }

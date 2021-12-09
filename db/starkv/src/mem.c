@@ -1,18 +1,4 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include "mem.h"
-// char *sdbGetTsTupleKey(const void *data) {
-//     record_t *sdata = (record_t *)dataRowTuple(data);
-// 	return (char *)sdata->key;
-// }
-static void mem_destroy(struct mem *pTableData) {
-  if (pTableData) {
-    skipListDestroy(pTableData->skipList);
-    free(pTableData);
-  }
-}
-
 static char *sdbGetTsTupleKey(const void *data) { return dataRowTuple(data); }
 struct mem *mem_create()
 {
@@ -30,19 +16,14 @@ err:
 	if (m) free(m);
 	return NULL;
 }
-// int mem_recreate(struct mem *mem){
-// 	int ret = KV_STORE_SUCCESS;
-// 	skipListDestroy(mem->skipList);
-// 	mem->skipList = NULL;
-// 	mem->skipList = skipListCreate(100, STAR_DATA_TYPE_BINARY, sizeof(int32_t), 0, false, true, sdbGetTsTupleKey);
-// 	if (!mem->skipList) {
-// 		ret = KV_STORE_ERROR_SKIPLIST;
-// 		goto err;
-// 	}
-// 	mem->mem_size = 0;
-// err:
-// 	return ret;
-// }
+int mem_destroy(struct mem *mem){
+	int ret = KV_STORE_SUCCESS;
+	if (mem->skipList)
+		skipListDestroy(mem->skipList);
+	if (mem)
+		free(mem);
+	return ret;
+}
 
 // int mem_flushs(int fd, struct mem *mem, uint32_t block_id, unsigned char **buf, size_t *buflen, size_t *count)
 // {
@@ -82,11 +63,11 @@ err:
 // 	return ret;
 // }
 
-int mem_flush(int fd, struct mem *mem)
+int mem_flush(int fd, struct mem *mem, uint32_t blockid_start, uint32_t blockid_end)
 {
 	int ret = KV_STORE_SUCCESS;
   	int numOfRows = 0;
-	DataBlock *block = stardb_create_data_block(STAR_MEM_START);
+	DataBlock *block = stardb_create_data_block(blockid_start);
 	if (!block) {
 		ret = KV_STORE_INVALID_BLOCK;
 		goto err;	
@@ -97,7 +78,7 @@ int mem_flush(int fd, struct mem *mem)
 		ret = KV_STORE_ERROR_SKIPLIST;
 		goto err;	
 	}
-	int block_id = STAR_MEM_START;
+	int block_id = blockid_start;
     while (skipListIterNext(sIter))
     {
         SSkipListNode *node = skipListIterGet(sIter);
@@ -105,6 +86,10 @@ int mem_flush(int fd, struct mem *mem)
 		if (data_block_is_full(block, dataRowLen(sdata))) {
 			stardb_store_data_block(fd, block);
 			block_id++;
+			if (block_id > blockid_end) {
+				ret = KV_STORE_BLOCK_FULL;
+				goto err;	
+			}
 			stardb_clear_data_block(fd, block_id, block);
 		}
 		void *gdata = dataRowTuple(sdata);
@@ -174,14 +159,14 @@ err:
 // 	}
 // 	return NULL;
 // }
-struct mem *mem_restore(int fd) {
+struct mem * mem_restore(int fd, uint32_t mem_blockid_start, uint32_t mem_blockid_end){
 	int ret = KV_STORE_SUCCESS;
-	struct mem *m = mem_create(STAR_MEM_START);
+	struct mem *m = mem_create(mem_blockid_start);
 	if (!m) {
 		ret = KV_STORE_INVALID_MALLOC;
 		goto err;	
 	}
-	for (int block_id = STAR_MEM_START; block_id < STAR_MEM_END; block_id++) {
+	for (int block_id = mem_blockid_start; block_id < mem_blockid_end; block_id++) {
 		DataBlock *block = stardb_restore_data_block(fd, block_id);
 		if (!block) {
 			//此block 以后的block 中无key.
@@ -223,7 +208,10 @@ int mem_put(struct mem *mem, SDataRow row) {
     }
     pNode->level = level;
 	dataRowCpy(SL_GET_NODE_DATA(pNode), row);
-    skipListPut(mem->skipList, pNode);
+    if (!skipListPut(mem->skipList, pNode)) {
+		ret = KV_STORE_ERROR_SKIPLIST;
+		goto err;
+	}
 	mem->mem_size += mem_size;
 err:
 	return ret;

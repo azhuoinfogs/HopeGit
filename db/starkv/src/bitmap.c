@@ -1,4 +1,9 @@
 #include "bitmap.h"
+void printf_bit_block(BitBlock *dblock) {
+    // printf("pread bitmap failed:blockid %d type:%d \n", bmp-> block.id, bmp->block.type);
+	printf(" block id:%d size:%d used_size:%d free_size:%d type:%d star_offset:%ld end_offset:%ld\n", dblock->block.id, 
+		dblock->block.size, dblock->block.used_size, dblock->block.free_size, dblock->block.type, dblock->block.start_address, dblock->block.end_address);
+}
 BITS bit_create(int fd)
 {
 	int64_t ssdSizeBytes;
@@ -6,19 +11,25 @@ BITS bit_create(int fd)
 	if (res < 0) {        
 		goto err;
 	}
-
     uint32_t bit_block_nums = ssdSizeBytes / (BITMAP_BLOCK_SIZE);
     uint32_t bit_char_nums = sizeof(char) * (bit_block_nums >> 3) + 1;
-
+    uint32_t data_size = sizeof(Bits) + bit_char_nums;
+    uint32_t max_datalen_each_block = BITMAP_BLOCK_SIZE - sizeof(BitBlock);
+    uint32_t block_nums = data_size / max_datalen_each_block + (((data_size % max_datalen_each_block) == 0) ? 0 : 1);
+    uint32_t total_block_size = block_nums * BITMAP_BLOCK_SIZE;
     BITS bmp  = (BITS)malloc(sizeof(Bits) + bit_char_nums);
     pthread_mutex_init(&bmp->mutex, NULL);
     if (!bmp){
         goto err;
     }
-
     bmp->num_of_bytes = bit_char_nums;
     bmp->num_of_bits = bit_block_nums;  
+    bmp->bit_of_blocks = block_nums; 
+    bmp->bit_of_size = total_block_size; 
+    bmp->bit_blockid_start = 1;
+    bmp->bit_blockid_end = (1 + block_nums - 1);
     memset(bmp->bits, 0, bit_char_nums);
+
     // for (size_t i = 0; i < bit_char_nums; i++){
     //     bmp->bits[i] = i % 256;
     // }
@@ -42,7 +53,7 @@ uint32_t bit_length(BITS bit)
     return num_of_bits;
 }
 
-uint32_t bit_save(int fd, BITS bit)
+uint32_t bit_save(int fd, BITS bit, uint32_t blockid_start, uint32_t blockid_end)
 {
     if(!bit){
         return -1;
@@ -55,18 +66,22 @@ uint32_t bit_save(int fd, BITS bit)
     void *buf;
     if (!posix_memalign((void **)&buf, getpagesize(), total_block_size)) {
 		memset(buf, 0, total_block_size);
-	}
-    else{
+	} else{
         printf("alloc posix_memalign feild\n");
         pthread_mutex_unlock(&bit->mutex);
         goto err;
     }
-
+    if (blockid_end != (blockid_start + block_nums -1)) {
+        printf("block end id is wrong\n");
+        pthread_mutex_unlock(&bit->mutex);
+        goto err;
+    }
     pthread_mutex_unlock(&bit->mutex);
-    bit_set_nblock_status(bit, STAR_BITMAP_BLOCKID_START, block_nums, true);
+    bit_set_nblock_status(bit, blockid_start, block_nums, true);
     pthread_mutex_lock(&bit->mutex);
     BitBlock *blk = (BitBlock *)malloc(BITMAP_BLOCK_SIZE);
-    for (int i = STAR_BITMAP_BLOCKID_START; i < block_nums; i++){
+    size_t offset = 0;
+    for (int i = blockid_start; i < (blockid_end + 1); i++){
         memset(blk, 0, BITMAP_BLOCK_SIZE);
         blk->block.id = i;
         blk->block.size = BITMAP_BLOCK_SIZE;
@@ -79,10 +94,11 @@ uint32_t bit_save(int fd, BITS bit)
         blk->block.free_size = BITMAP_BLOCK_SIZE - sizeof(BitBlock) - cur_block_data_size;
         blk->bitLength = cur_block_data_size;
         memcpy(blk->data, (char *)bit + i * max_datalen_each_block, cur_block_data_size);
-        memcpy((char *)buf + blk->block.start_address, (char *)blk, BITMAP_BLOCK_SIZE);
+        memcpy((char *)buf + offset, (char *)blk, BITMAP_BLOCK_SIZE);
+        offset += BITMAP_BLOCK_SIZE;
     }
     
-    if(pwrite(fd, buf, total_block_size, 0) <= 0){
+    if(pwrite(fd, buf, total_block_size, (blockid_start * BITMAP_BLOCK_SIZE)) <= 0){
         printf("Write block to ssd feild\n");
         pthread_mutex_unlock(&bit->mutex);
         free(blk);
@@ -96,7 +112,7 @@ err:
     return -1;
 }
 
-BITS bit_read(int fd)
+BITS bit_read(int fd, uint32_t blockid_start, uint32_t blockid_end)
 {
     BITS bit;
     bit = (Bits *)malloc(sizeof(Bits));
@@ -110,17 +126,22 @@ BITS bit_read(int fd)
         goto err;
     }
     int total_data_size = 0, data_offset = 0;
-    for (size_t block_id = STAR_BITMAP_BLOCKID_START; block_id < (STAR_BITMAP_BLOCKID_END + 1); block_id++){
+    for (size_t block_id = blockid_start; block_id < (blockid_end + 1); block_id++){
         memset(buf, 0, BITMAP_BLOCK_SIZE);       
         uint32_t read_bytes = pread(fd, buf, BITMAP_BLOCK_SIZE, block_id * BITMAP_BLOCK_SIZE);
-        if(read_bytes != BITMAP_BLOCK_SIZE) { free(bit); free(buf); goto err; }
+        if(read_bytes != BITMAP_BLOCK_SIZE) {
+            free(bit);
+            free(buf);
+            printf("pread bitmap failed\n");
+            goto err;
+        }
         BitBlock *blk = (BitBlock *)buf;
         if((blk->block.id != block_id) || (blk->block.type != STAR_BLOCK_TYPE_BITMAP)\
         || (blk->block.size != BITMAP_BLOCK_SIZE) || (blk->block.start_address != (block_id * BITMAP_BLOCK_SIZE))\
         || (blk->block.end_address != ((block_id + 1) * BITMAP_BLOCK_SIZE)) || (blk->block.used_size == 0)){
+            printf_bit_block(blk);
             break;
         }
-        
         total_data_size += blk->bitLength;
         void *temp = realloc(bit, total_data_size);
         if(!temp) { free(bit); free(buf); goto err; }
@@ -130,11 +151,11 @@ BITS bit_read(int fd)
     }
     pthread_mutex_init(&bit->mutex, NULL);
     free(buf);
-    if((total_data_size != (sizeof(Bits) + bit->num_of_bytes)) || (total_data_size == 0)){
+    if(total_data_size == 0 ) {
+        printf("pread bitmap failed:total_data_size %d--%d--%ld\n", total_data_size,  bit->num_of_bytes, sizeof(Bits));
         free(bit);
         bit = NULL;
     }
-   
     return bit;
 err:
     return NULL;
@@ -214,13 +235,13 @@ bool bit_get_block_status(BITS bit, uint32_t id)
     return state;
 }
 
-uint32_t get_available_block_id(BITS bit, enum BlockType type)
+uint32_t get_available_block_id(BITS bit, enum BlockType type, uint32_t blockid_start, uint32_t blockid_end)
 {
     uint32_t res_id = -1;
     switch (type)
     {
     case STAR_BLOCK_TYPE_BITMAP:
-        for (size_t i = STAR_BITMAP_BLOCKID_START; i < STAR_BITMAP_BLOCKID_END; i++){
+        for (size_t i = blockid_start; i < blockid_end; i++){
             if(!bit_get_block_status(bit, i)){
                 res_id = i;
                 break;
@@ -228,26 +249,8 @@ uint32_t get_available_block_id(BITS bit, enum BlockType type)
         }
         break;
     
-    case STAR_BLOCK_TYPE_WAL:
-        for (size_t i = STAR_WAL_BLOCKID_START; i < STAR_WAL_BLOCKID_END; i++){
-            if(!bit_get_block_status(bit, i)){
-                res_id = i;
-                break;
-            }
-        }
-        break;
-
-    case STAR_BLOCK_TYPE_DBINFO:
-        for (size_t i = STAR_DBINFO_BLOCKID_START; i < STAR_DBINFO_BLOCKID_END; i++){
-            if(!bit_get_block_status(bit, i)){
-                res_id = i;
-                break;
-            }
-        }
-        break;
-    
-    case STAR_BLOCK_TYPE_TBINFO:
-        for (size_t i = STAR_TBINFO_BLOCKID_START; i < STAR_TBINFO_BLOCKID_END; i++){
+    case STAR_BLOCK_TYPE_MEM:
+        for (size_t i = blockid_start; i < blockid_end; i++){
             if(!bit_get_block_status(bit, i)){
                 res_id = i;
                 break;
@@ -256,7 +259,7 @@ uint32_t get_available_block_id(BITS bit, enum BlockType type)
         break;
 
     case STAR_BLOCK_TYPE_DATA:
-        for (size_t i = STAR_DATA_BLOCKID_START; i < bit->num_of_bits; i++){
+        for (size_t i = blockid_start; i <blockid_end; i++){
             if(!bit_get_block_status(bit, i)){
                 res_id = i;
                 break;
@@ -303,35 +306,30 @@ uint32_t get_available_block_list(BITS bit, enum BlockType type, uint32_t nbit)
     return res_id;
 }
 
-BITS  bitInit(int fd)
-{
-    BITS starBitmap = bit_read(fd);
-    if(!starBitmap){
-        fprintf(stdout, "Create new bitmap\n");
-        starBitmap = bit_create(fd);
-        if(!starBitmap){
-            fprintf(stdout, "bit map create failed\n");
-            return NULL;
-        }
-        printf("bitMap created, num_of_bits %d\n", starBitmap->num_of_bits);
+// BITS  bitInit(int fd)
+// {
+//     BITS starBitmap = bit_read(fd);
+//     if(!starBitmap){
+//         fprintf(stdout, "Create new bitmap\n");
+//         starBitmap = bit_create(fd);
+//         if(!starBitmap){
+//             fprintf(stdout, "bit map create failed\n");
+//             return NULL;
+//         }
+//         printf("bitMap created, num_of_bits %d\n", starBitmap->num_of_bits);
 
-        int res = bit_save(fd, starBitmap);
-        if(res > 0) {
-            printf("bitMap saved, size %d\n", res);
-        }
-        else 
-        { 
-            printf("bitMap save failed, res %d\n", res); 
-            return NULL; 
-        }        
-    }
-    return starBitmap;
-}
-
-uint32_t bitGetBlockId(BITS starBitmap, enum BlockType type)
-{
-   return get_available_block_id(starBitmap, type);
-}
+//         int res = bit_save(fd, starBitmap, 0, starBitmap->bit_of_blocks - 1);
+//         if(res > 0) {
+//             printf("bitMap saved, size %d\n", res);
+//         }
+//         else 
+//         { 
+//             printf("bitMap save failed, res %d\n", res); 
+//             return NULL; 
+//         }        
+//     }
+//     return starBitmap;
+// }
 
 uint32_t bitGetNBlockId(BITS starBitmap, enum BlockType type, uint32_t nbit)
 {
