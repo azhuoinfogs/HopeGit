@@ -4,7 +4,7 @@ int check_dev(kv_dev_t *dev) {
 		return -1;
 	return 0;
 }
-int check_dev_write(kv_dev_t *dev) {
+int check_dev_rw(kv_dev_t *dev) {
 	struct mem *memtable = dev->memtable;
 	if (!memtable) {
 		printf("memtable is null\n");
@@ -270,7 +270,7 @@ SDataRow kv_prepare_data(unsigned char *data, size_t datalen)
 
 int kv_store_put(kv_dev_t *dev, unsigned char *key, size_t keylen, unsigned char *data, size_t datalen, char **errptr) {
 	int ret = KV_STORE_SUCCESS;
-	if ((check_dev_write(dev) < 0) || !key || !data || (keylen == 0) || (datalen == 0) ){
+	if ((check_dev_rw(dev) < 0) || !key || !data || (keylen == 0) || (datalen == 0) ){
 		ret = KV_STORE_INVALID_PARAMETER;
 		goto err;
 	}
@@ -305,7 +305,7 @@ err:
 int kv_store_get(kv_dev_t *dev, unsigned char *key, size_t keylen, unsigned char **buf, size_t *buflen, char **errptr) {
 	int ret = KV_STORE_SUCCESS;
 	struct mem *memtable = dev->memtable;
-	if ((check_dev(dev) < 0) || !key  || (keylen ==0)){
+	if ((check_dev_rw(dev) < 0) || !key  || (keylen ==0)){
 		ret = KV_STORE_INVALID_PARAMETER;
 		goto err;
 	}
@@ -330,6 +330,21 @@ int kv_store_get(kv_dev_t *dev, unsigned char *key, size_t keylen, unsigned char
 	memcpy(*buf, vbuf, length);
 	*buflen = length;
 	free(get_block);
+err:
+	SaveError(errptr, ret);
+	return ret;
+}
+int kv_store_delete(kv_dev_t *dev, unsigned char *key, size_t keylen, char **errptr) {
+	int ret = KV_STORE_SUCCESS;
+	struct mem *memtable = dev->memtable;
+	if ((check_dev_rw(dev) < 0) || !key  || (keylen ==0)){
+		ret = KV_STORE_INVALID_PARAMETER;
+		goto err;
+	}
+	if (!mem_delete(memtable, key, keylen)) {
+		ret = KV_STORE_INVALID_KEY;
+		goto err;
+	}
 err:
 	SaveError(errptr, ret);
 	return ret;

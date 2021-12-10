@@ -31,12 +31,14 @@ void TEST_1_APP(void)
 
 void TEST_2_APP(void)
 {
-    printf("测试项目二 create database \n");
+    printf("测试项目二 create database and clean \n");
     char *devname = "/dev/nvme0"; 
-    int dbindex = starkv_create_database(devname, "test.db", 1073741824, 1, 100);
+    starkv_options_t *op = starkv_options_create(1073741824, 1, 100);
+    int dbindex = starkv_create_database(devname, "test.db", op);
     if (dbindex < 0) {
         exit(-1);
     }
+    starkv_options_destroy(op);
     printf("TEST_2_APP pass !!!\n");
 	// // int dbindex = 2;
 }
@@ -59,14 +61,14 @@ void TEST_3_APP(void)
 
 void TEST_4_APP(void)
 {
-    printf("测试项目四 starkv_put and get \n");
+    printf("测试项目四 starkv_put get and delete \n");
     char *devname = "/dev/nvme0"; //执行完test2 成功后， 至少dbindex 1 的database 存在。
     int dbindex = 1;
 	starkv_t *dev = starkv_open_database(devname, "test.db", dbindex);
     if (!dev) {
         exit(-1);
     }
-    char *err;
+    char *err =NULL;
     char *keybuf= "key";
     char *valbuf= "value";
     unsigned char *sv;
@@ -88,6 +90,18 @@ void TEST_4_APP(void)
 			sv = NULL;
 		} else {
 			printf("get:%s  failed: %s\n", keybuf, err);
+            exit(-1);
+		}
+        ret = starkv_delete(dev, keybuf, keybuf_len, &err);
+        if (ret != 0) {
+            printf("starkv_delete failed %s\n", err);
+            exit(-1);
+        }
+        ret = starkv_get(dev, keybuf, keybuf_len, &sv, &val_len, &err);
+		if(sv) {
+			printf("get wrong delete value:%s--%s--%s\n", keybuf, sv, valbuf);
+			free(sv);
+			sv = NULL;
             exit(-1);
 		}
     }

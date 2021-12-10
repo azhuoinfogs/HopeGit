@@ -16,6 +16,12 @@ extern "C" {
 #define MAX_KEY_LEN 512
 #define MAX_NAEM_LEN 32
 #define BLOCK_END 0xFFFFFFFF
+typedef struct kv_option {
+	size_t    min_key_size;
+	size_t    max_value_size;
+	size_t    dbsize;
+}kv_option_t;
+
 typedef struct dev_header {
     int64_t  ssd_size;
 	int64_t  total_blocks;
@@ -76,6 +82,7 @@ int kv_store_flush(kv_dev_t *dev);
 int kv_store_restore(kv_dev_t *dev);
 int kv_store_put(kv_dev_t *dev, unsigned char *key, size_t keylen,unsigned char *data, size_t datalen, char **errptr);
 int kv_store_get(kv_dev_t *dev, unsigned char *key, size_t keylen, unsigned char **buf, size_t *buflen, char **errptr);
+int kv_store_delete(kv_dev_t *dev, unsigned char *key, size_t keylen, char **errptr);
 bool SaveError(char** errptr, uint32_t status);
 SDataRow kv_prepare_key(unsigned char *key, size_t keylen, int block_id, size_t data_offset, size_t datalen);
 SDataRow kv_prepare_data(unsigned char *data, size_t datalen);

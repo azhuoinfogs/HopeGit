@@ -22,9 +22,9 @@ char *getkey(const void *data)
 int main () {
     printf("test datablock \n");
     char *devname = "/dev/nvme0";
-    int dbindex = starkv_create_database(devname, "test.db", 1073741824, 1, 10);
+    // int dbindex = starkv_create_database(devname, "test.db", 1073741824, 1, 10);
     char dev[32] = {0};
-    // int dbindex = 8;
+    int dbindex = 1;
     (void)snprintf(dev, 32, "%sn%d", devname, dbindex);
     int fd;
     if ((fd = open(dev, O_RDWR | __O_DIRECT)) < 0) {

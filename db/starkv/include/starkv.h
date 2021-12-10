@@ -46,17 +46,20 @@ typedef struct starkv_info{
 
 DLL_EXPORT int starkv_get(starkv_t *dev, unsigned char *key, size_t keylen, unsigned char **buf, size_t *buflen, char **errptr);
 DLL_EXPORT int starkv_put(starkv_t *dev, unsigned char *key, size_t keylen,unsigned char *data, size_t datalen, char **errptr);
+DLL_EXPORT int starkv_delete(starkv_t *dev, unsigned char *key, size_t keylen, char **errptr);
 DLL_EXPORT starkv_iterator_t* starkv_create_iterator(starkv_t* db);
 DLL_EXPORT void starkv_iter_destroy(starkv_iterator_t* iter);
 DLL_EXPORT bool starkv_iter_next(starkv_iterator_t* iter);
 DLL_EXPORT char* starkv_iter_key(starkv_iterator_t *iter, size_t* klen);
 DLL_EXPORT char* starkv_iter_value(starkv_iterator_t *iter, size_t* vlen);
-DLL_EXPORT int starkv_create_database(char *dev, char *dbname, size_t dbsize, int min_key_size, int max_value_size);
+DLL_EXPORT int starkv_create_database(char *dev, char *dbname, starkv_options_t *op);
 DLL_EXPORT starkv_t *starkv_open_database(char *dev, char *dbname, int nsid);
 DLL_EXPORT void starkv_cleanup_database(starkv_t *dev);
 DLL_EXPORT int starkv_close_database(starkv_t *dev);
 DLL_EXPORT starkv_info_t **starkv_list_column_families(size_t* lencfs, char** errptr);
 DLL_EXPORT void starkv_array_free(void **infoArray, int num);
+DLL_EXPORT starkv_options_t *starkv_options_create(size_t dbsize, int min_key_size, int max_value_size);
+DLL_EXPORT void starkv_options_destroy(starkv_options_t* v);
 
 #ifdef __cplusplus
 }

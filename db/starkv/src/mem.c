@@ -24,45 +24,6 @@ int mem_destroy(struct mem *mem){
 		free(mem);
 	return ret;
 }
-
-// int mem_flushs(int fd, struct mem *mem, uint32_t block_id, unsigned char **buf, size_t *buflen, size_t *count)
-// {
-// 	int ret = KV_STORE_SUCCESS;
-//   	int numOfRows = 0;
-// 	DataBlock *block = stardb_create_data_block(block_id);
-// 	if (!block) {
-// 		ret = KV_STORE_INVALID_BLOCK;
-// 		goto err;	
-// 	}
-// 	SSkipList *skipList = mem->skipList;
-// 	SSkipListIterator *sIter = skipListCreateIter(skipList);
-// 	if (!sIter) {
-// 		ret = KV_STORE_ERROR_SKIPLIST;
-// 		goto err;	
-// 	}
-//     while (skipListIterNext(sIter))
-//     {
-//         SSkipListNode *node = skipListIterGet(sIter);
-// 		SDataRow sdata = SL_GET_NODE_DATA(node);
-// 		data_block_add_rowdata(block, sdata);
-// 		numOfRows++;
-//     }
-//   	ret = stardb_store_data_block(fd, block);
-//   	if (ret < 0) {
-// 		ret = KV_STORE_INVALID_BLOCK;
-// 		goto err;
-// 	}
-// 	char *maxbuf = calloc(1, strlen( block->max_key));
-// 	memcpy(maxbuf, block->max_key, strlen(block->max_key));
-// 	*buflen = strlen(block->max_key);
-// 	*count = block->row_count;
-// 	*buf = maxbuf;
-// err:
-// 	if (sIter)
-// 		skipListDestroyIter(sIter);
-// 	return ret;
-// }
-
 int mem_flush(int fd, struct mem *mem, uint32_t blockid_start, uint32_t blockid_end)
 {
 	int ret = KV_STORE_SUCCESS;
@@ -109,56 +70,6 @@ err:
 		skipListDestroyIter(sIter);
 	return ret;
 }
-
-
-// struct mem *mem_restore(int fd,  uint32_t block_id) {
-// 	int ret = KV_STORE_SUCCESS;
-// 	DataBlock *block = stardb_get_data_block(fd, block_id);
-// 	if (!block) {
-// 		ret = KV_STORE_INVALID_BLOCK;
-// 		goto err;
-// 	}
-// 	struct mem *m = mem_create(block_id);
-// 	if (!m) {
-// 		ret = KV_STORE_INVALID_MALLOC;
-// 		goto err;	
-// 	}
-// 	void *buf = block->data;
-// 	int64_t total_mem_size = 0;
-// 	size_t offset = 0;
-// 	while(true) {
-// 		record_t *record = (record_t *)(buf + offset);
-// 		if (record->watermark != START_MARK) {
-// 			break;
-// 		}
-// 		SDataRow row = kv_prepare(record);
-// 		if (!row) {
-// 			break;
-// 		}
-// 		int32_t level = 0;
-//     	int32_t headSize = 0;
-//     	skipListNewNodeInfo(m->skipList, &level, &headSize);
-// 		SSkipListNode *pNode = calloc(1, headSize + dataRowLen(row));
-// 		if (pNode == NULL) {
-// 			break;
-//     	}
-//     	pNode->level = level;
-// 		dataRowCpy(SL_GET_NODE_DATA(pNode), row);
-//     	skipListPut(m->skipList, pNode);
-// 		size_t mem_size = headSize + dataRowLen(row);
-// 		m->mem_size += mem_size;
-// 		offset += (sizeof(record_t)+ record->data_len);
-// 	}
-// 	if (block){
-// 		stardb_free_data_block(block);
-// 	}
-// 	return m;
-// err:
-// 	if (block){
-// 		stardb_free_data_block(block);
-// 	}
-// 	return NULL;
-// }
 struct mem * mem_restore(int fd, uint32_t mem_blockid_start, uint32_t mem_blockid_end){
 	int ret = KV_STORE_SUCCESS;
 	struct mem *m = mem_create(mem_blockid_start);
@@ -219,9 +130,16 @@ int mem_full(struct mem *memtable, SDataRow row) {
 	}
 	return 0;
 }
-
+int mem_delete(struct mem *mem, unsigned char *key, size_t keylen) {
+	tstr *keybuf = calloc(1, sizeof(tstr) + keylen);
+	keybuf->len = keylen;
+    memcpy(keybuf->data, key, keylen);
+	int ret = skipListRemove(mem->skipList, (SSkipListKey)keybuf);
+	free(keybuf);
+	return ret;
+}
 SDataRow mem_get(struct mem *mem, unsigned char *key, size_t keylen) {
-	tstr *keybuf =  calloc(1, keylen + sizeof(VarDataLenT));
+	tstr *keybuf = calloc(1, sizeof(tstr) + keylen);
 	keybuf->len = keylen;
     memcpy(keybuf->data, key, keylen);
 	SArray *nodes = skipListGet(mem->skipList, (SSkipListKey )keybuf);
@@ -229,6 +147,7 @@ SDataRow mem_get(struct mem *mem, unsigned char *key, size_t keylen) {
 		return NULL;
 	}
 	SSkipListNode *pNode = (SSkipListNode *)starArrayGetP(nodes, 0);
+	free(keybuf);
 	return SL_GET_NODE_DATA(pNode);
 }
 void mem_print(struct mem *mem) {
@@ -244,8 +163,5 @@ void mem_print(struct mem *mem) {
         tstr *da = (tstr*) gdata;
         struct v_index *dv = (struct v_index *)(gdata + varDataTLen(gdata));
 		printf("%s-%d--%d\n", da->data, da->len, dv->value_block_id);
-		// record_t *s_record = (record_t *)dataRowTuple(sdata);
-        // printf("mem:key:%s-keylen:%ld--value_len:%ld\n",  s_record->key,s_record->key_len, s_record->data_len);
-        /* code */
     }
 }

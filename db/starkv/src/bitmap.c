@@ -18,6 +18,7 @@ BITS bit_create(int fd)
     uint32_t block_nums = data_size / max_datalen_each_block + (((data_size % max_datalen_each_block) == 0) ? 0 : 1);
     uint32_t total_block_size = block_nums * BITMAP_BLOCK_SIZE;
     BITS bmp  = (BITS)malloc(sizeof(Bits) + bit_char_nums);
+    memset(bmp, 0, sizeof(Bits) + bit_char_nums);
     pthread_mutex_init(&bmp->mutex, NULL);
     if (!bmp){
         goto err;
@@ -28,7 +29,6 @@ BITS bit_create(int fd)
     bmp->bit_of_size = total_block_size; 
     bmp->bit_blockid_start = 1;
     bmp->bit_blockid_end = (1 + block_nums - 1);
-    memset(bmp->bits, 0, bit_char_nums);
 
     // for (size_t i = 0; i < bit_char_nums; i++){
     //     bmp->bits[i] = i % 256;
@@ -81,6 +81,7 @@ uint32_t bit_save(int fd, BITS bit, uint32_t blockid_start, uint32_t blockid_end
     pthread_mutex_lock(&bit->mutex);
     BitBlock *blk = (BitBlock *)malloc(BITMAP_BLOCK_SIZE);
     size_t offset = 0;
+    size_t bit_offset = 0;
     for (int i = blockid_start; i < (blockid_end + 1); i++){
         memset(blk, 0, BITMAP_BLOCK_SIZE);
         blk->block.id = i;
@@ -88,14 +89,19 @@ uint32_t bit_save(int fd, BITS bit, uint32_t blockid_start, uint32_t blockid_end
         blk->block.type = STAR_BLOCK_TYPE_BITMAP;
         blk->block.start_address = i * BITMAP_BLOCK_SIZE;
         blk->block.end_address = BITMAP_BLOCK_SIZE * (i + 1);
-        uint32_t cur_block_data_size = (((i+1) * max_datalen_each_block) > data_size) ? (data_size % max_datalen_each_block) : max_datalen_each_block;
+
+        uint32_t cur_block_data_size = (data_size > max_datalen_each_block) ? (data_size % max_datalen_each_block) : data_size;
+
+        // uint32_t cur_block_data_size = (((i+1) * max_datalen_each_block) > data_size) ? (data_size % max_datalen_each_block) : max_datalen_each_block;
         
         blk->block.used_size = cur_block_data_size + sizeof(BitBlock);
         blk->block.free_size = BITMAP_BLOCK_SIZE - sizeof(BitBlock) - cur_block_data_size;
         blk->bitLength = cur_block_data_size;
-        memcpy(blk->data, (char *)bit + i * max_datalen_each_block, cur_block_data_size);
+
+        memcpy(blk->data, (char *)bit + bit_offset, cur_block_data_size);
         memcpy((char *)buf + offset, (char *)blk, BITMAP_BLOCK_SIZE);
         offset += BITMAP_BLOCK_SIZE;
+        bit_offset += cur_block_data_size;
     }
     
     if(pwrite(fd, buf, total_block_size, (blockid_start * BITMAP_BLOCK_SIZE)) <= 0){
@@ -139,7 +145,6 @@ BITS bit_read(int fd, uint32_t blockid_start, uint32_t blockid_end)
         if((blk->block.id != block_id) || (blk->block.type != STAR_BLOCK_TYPE_BITMAP)\
         || (blk->block.size != BITMAP_BLOCK_SIZE) || (blk->block.start_address != (block_id * BITMAP_BLOCK_SIZE))\
         || (blk->block.end_address != ((block_id + 1) * BITMAP_BLOCK_SIZE)) || (blk->block.used_size == 0)){
-            printf_bit_block(blk);
             break;
         }
         total_data_size += blk->bitLength;

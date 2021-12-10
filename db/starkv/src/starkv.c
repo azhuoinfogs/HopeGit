@@ -1,20 +1,16 @@
 #include "starkv.h"
 #include "kv_store.h"
-starkv_t *starkv_open(char *dev) {
-    // return (starkv_t*) kv_store_open(dev);
-    return NULL;
+starkv_options_t *starkv_options_create(size_t dbsize, int min_key_size, int max_value_size) {
+    kv_option_t *option = malloc(sizeof(kv_option_t));
+    option->dbsize = dbsize;
+    option->min_key_size = min_key_size;
+    option->max_value_size = max_value_size;
+    return (starkv_options_t*) option;
 }
-int starkv_init(starkv_t *dev) {
-    // kv_dev_t* kdev = (kv_dev_t *)dev;
-    // return kv_store_init(kdev, 1);
-}
-int starkv_close(starkv_t *dev) {
-    // kv_dev_t* kdev = (kv_dev_t *)dev;
-    // return kv_store_close(kdev);  
-}
-void starkv_cleanup(starkv_t *dev) {
-    // kv_dev_t* kdev = (kv_dev_t *)dev;
-    // return kv_store_free(kdev);
+void starkv_options_destroy(starkv_options_t* op) {
+    if (op)
+        free(op);
+    return;
 }
 int starkv_put(starkv_t *dev, unsigned char *key, size_t keylen,unsigned char *data, size_t datalen, char **errptr) {
     kv_dev_t* kdev = (kv_dev_t *)dev;
@@ -23,6 +19,10 @@ int starkv_put(starkv_t *dev, unsigned char *key, size_t keylen,unsigned char *d
 int starkv_get(starkv_t *dev, unsigned char *key, size_t keylen, unsigned char **buf, size_t *buflen, char **errptr) {
     kv_dev_t* kdev = (kv_dev_t *)dev;
     return kv_store_get(kdev, key, keylen, buf, buflen, errptr);
+}
+int starkv_delete(starkv_t *dev, unsigned char *key, size_t keylen, char **errptr) {
+    kv_dev_t* kdev = (kv_dev_t *)dev;
+    return kv_store_delete(kdev, key, keylen, errptr);  
 }
 starkv_iterator_t* starkv_create_iterator(starkv_t* dev) {
     kv_dev_t* kdev = (kv_dev_t *)dev;
@@ -41,8 +41,16 @@ char* starkv_iter_key(void* iter, size_t* klen) {
 char* starkv_iter_value(void* iter, size_t* klen) {
     return kv_iter_value(iter, klen);
 }
-int starkv_create_database(char *dev, char *dbname, size_t dbsize, int min_key_size, int max_value_size) {
+int starkv_create_database(char *dev, char *dbname, starkv_options_t *op) {
 	int ret = KV_STORE_SUCCESS;
+    if ((strlen(dev) == 0) || (strlen(dbname) == 0) || (!op)) {
+        ret = KV_STORE_INVALID_PARAMETER;
+        goto err;  
+    }
+    kv_option_t *options = (kv_option_t *)op;
+    size_t dbsize = options->dbsize;
+    size_t min_key_size = options->min_key_size;
+    size_t max_value_size = options->max_value_size;
     size_t lba_count = dbsize / SECTOR_SIZE;
     int nsid = create_ns(dev, lba_count);
     if (nsid < 0 ) {

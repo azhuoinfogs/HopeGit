@@ -73,7 +73,7 @@ int tSystem(const char * cmd)
 { 
   FILE * fp; 
   int res; 
-  char buf[1024]; 
+  char buf[1024]= {0}; 
   if (cmd == NULL) { 
     printf("tSystem cmd is NULL!\n");
     return -1;

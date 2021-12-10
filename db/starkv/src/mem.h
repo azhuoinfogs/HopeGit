@@ -24,6 +24,7 @@ int mem_flush(int fd, struct mem *mem, uint32_t blockid_start, uint32_t blockid_
 int mem_recreate(struct mem *mem);
 int mem_destroy(struct mem *mem);
 int mem_put(struct mem *mem, SDataRow row);
+int mem_delete(struct mem *mem, unsigned char *key, size_t keylen);
 SDataRow mem_get(struct mem *mem, unsigned char *key, size_t keylen);
 int mem_full(struct mem *mem, SDataRow row);
 void mem_print(struct mem *mem);
