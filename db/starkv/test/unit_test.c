@@ -100,7 +100,35 @@ void TEST_4_APP(void)
 
 void TEST_5_APP(void)
 {
-    printf("测试项目五\n");  
+    printf("测试项目五 starkv_iterate \n");
+    char *devname = "/dev/nvme0"; //执行完test2 成功后， 至少dbindex 1 的database 存在。
+    int dbindex = 1;
+    int ret;
+	starkv_t *dev = starkv_open_database(devname, "test.db", dbindex);
+    if (!dev) {
+        exit(-1);
+    }
+	starkv_iterator_t *sIter = starkv_create_iterator(dev);
+	int scount;
+    while (starkv_iter_next(sIter))
+    {
+		size_t key_len;
+        char *key = starkv_iter_key(sIter, &key_len);
+		if (key)
+        	printf("data:%s--%ld\n", key, key_len);
+		size_t val_len;
+        char *val = starkv_iter_value(sIter, &val_len);
+		if (val)
+        	printf("data:%s--%ld\n", val, val_len);
+        /* code */
+		scount ++;
+    }
+	starkv_iter_destroy(sIter);
+    ret =  starkv_close_database(dev);
+    if (ret != 0) {
+        exit(-1);
+    }
+    printf("TEST_5_APP pass !!!\n");
 }
 
 void TEST_6_APP(void)
@@ -149,5 +177,6 @@ int main(void)
     Run_User_Test_App(2);
     Run_User_Test_App(3);
     Run_User_Test_App(4);
+    Run_User_Test_App(5);
     return 0 ;
 }
