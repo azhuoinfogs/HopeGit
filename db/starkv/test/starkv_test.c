@@ -14,7 +14,7 @@ void _random_key(char* key, int length)
 int test_case1(){
 	char *err;
 	size_t num;
-	starkv_info_t **infos = starkv_list_column_families(&num, &err);
+	starkv_info_t **infos = starkv_list_dbinfo(&num, &err);
 	for (int i = 0; i < num; i++) {
 		printf("%s--%s--%d\n", infos[i]->devname, infos[i]->dbname, infos[i]->db_id);
 	}

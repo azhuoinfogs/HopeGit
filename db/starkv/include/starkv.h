@@ -56,7 +56,7 @@ DLL_EXPORT int starkv_create_database(char *dev, char *dbname, starkv_options_t 
 DLL_EXPORT starkv_t *starkv_open_database(char *dev, char *dbname, int nsid);
 DLL_EXPORT void starkv_cleanup_database(starkv_t *dev);
 DLL_EXPORT int starkv_close_database(starkv_t *dev);
-DLL_EXPORT starkv_info_t **starkv_list_column_families(size_t* lencfs, char** errptr);
+DLL_EXPORT starkv_info_t **starkv_list_dbinfo(size_t* lencfs, char** errptr);
 DLL_EXPORT void starkv_array_free(void **infoArray, int num);
 DLL_EXPORT starkv_options_t *starkv_options_create(size_t dbsize, int min_key_size, int max_value_size);
 DLL_EXPORT void starkv_options_destroy(starkv_options_t* v);

@@ -108,7 +108,7 @@ void starkv_array_free(void **infoArray, int num) {
     if (infoArray)
         free(infoArray);
 }
-starkv_info_t **starkv_list_column_families(size_t* lencfs, char** errptr) {
+starkv_info_t **starkv_list_dbinfo(size_t* lencfs, char** errptr) {
     int num;
     int fd;
     starkv_info_t **infos = NULL;

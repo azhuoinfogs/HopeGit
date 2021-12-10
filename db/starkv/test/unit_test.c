@@ -21,7 +21,7 @@ void TEST_1_APP(void)
     printf("测试项目一 list database info\n");
     char *err;
 	size_t num = 0;
-	starkv_info_t **infos = starkv_list_column_families(&num, &err);
+	starkv_info_t **infos = starkv_list_dbinfo(&num, &err);
 	for (int i = 0; i < num; i++) {
 		printf("%s--%s--%d\n", infos[i]->devname, infos[i]->dbname, infos[i]->db_id);
 	}
