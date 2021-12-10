@@ -12,17 +12,17 @@ void starkv_options_destroy(starkv_options_t* op) {
         free(op);
     return;
 }
-int starkv_put(starkv_t *dev, unsigned char *key, size_t keylen,unsigned char *data, size_t datalen, char **errptr) {
+int starkv_put(starkv_t *dev,  char *key, size_t keylen, char *data, size_t datalen, char **errptr) {
     kv_dev_t* kdev = (kv_dev_t *)dev;
     return kv_store_put(kdev, key, keylen, data, datalen, errptr);
 }
-int starkv_get(starkv_t *dev, unsigned char *key, size_t keylen, unsigned char **buf, size_t *buflen, char **errptr) {
+int starkv_get(starkv_t *dev,  char *key, size_t keylen,  char **buf, size_t *buflen, char **errptr) {
     kv_dev_t* kdev = (kv_dev_t *)dev;
     return kv_store_get(kdev, key, keylen, buf, buflen, errptr);
 }
-int starkv_delete(starkv_t *dev, unsigned char *key, size_t keylen, char **errptr) {
+int starkv_delete(starkv_t *dev,  char *key, size_t keylen, char **errptr) {
     kv_dev_t* kdev = (kv_dev_t *)dev;
-    return kv_store_delete(kdev, key, keylen, errptr);  
+    return kv_store_delete(kdev, key, keylen, errptr);
 }
 starkv_iterator_t* starkv_create_iterator(starkv_t* dev) {
     kv_dev_t* kdev = (kv_dev_t *)dev;

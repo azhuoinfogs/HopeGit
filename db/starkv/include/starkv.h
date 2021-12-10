@@ -44,9 +44,9 @@ typedef struct starkv_info{
 	char devname[32];
 }starkv_info_t;
 
-DLL_EXPORT int starkv_get(starkv_t *dev, unsigned char *key, size_t keylen, unsigned char **buf, size_t *buflen, char **errptr);
-DLL_EXPORT int starkv_put(starkv_t *dev, unsigned char *key, size_t keylen,unsigned char *data, size_t datalen, char **errptr);
-DLL_EXPORT int starkv_delete(starkv_t *dev, unsigned char *key, size_t keylen, char **errptr);
+DLL_EXPORT int starkv_get(starkv_t *dev,  char *key, size_t keylen,  char **buf, size_t *buflen, char **errptr);
+DLL_EXPORT int starkv_put(starkv_t *dev,  char *key, size_t keylen, char *data, size_t datalen, char **errptr);
+DLL_EXPORT int starkv_delete(starkv_t *dev,  char *key, size_t keylen, char **errptr);
 DLL_EXPORT starkv_iterator_t* starkv_create_iterator(starkv_t* db);
 DLL_EXPORT void starkv_iter_destroy(starkv_iterator_t* iter);
 DLL_EXPORT bool starkv_iter_next(starkv_iterator_t* iter);

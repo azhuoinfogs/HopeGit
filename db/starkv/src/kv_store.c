@@ -229,7 +229,7 @@ void kv_destroy_dev(kv_dev_t * dev){
 		free(dev);
 	return;
 }
-SDataRow kv_prepare_key(unsigned char *key, size_t keylen, int block_id, size_t data_offset, size_t datalen)
+SDataRow kv_prepare_key( char *key, size_t keylen, int block_id, size_t data_offset, size_t datalen)
 {
 	int key_size = sizeof(VarDataLenT) + keylen;
     int row_size = SD_DATA_ROW_HEAD_SIZE + key_size + sizeof(struct v_index);
@@ -253,7 +253,7 @@ SDataRow kv_prepare_key(unsigned char *key, size_t keylen, int block_id, size_t 
     memcpy(data + varDataTLen(keybuf), &v, sizeof(struct v_index));
 	return row;
 }
-SDataRow kv_prepare_data(unsigned char *data, size_t datalen)
+SDataRow kv_prepare_data( char *data, size_t datalen)
 {	
 	int row_size = SD_DATA_ROW_HEAD_SIZE + datalen;
 	SDataRow row = malloc(row_size);
@@ -268,7 +268,7 @@ SDataRow kv_prepare_data(unsigned char *data, size_t datalen)
 	return row;
 }
 
-int kv_store_put(kv_dev_t *dev, unsigned char *key, size_t keylen, unsigned char *data, size_t datalen, char **errptr) {
+int kv_store_put(kv_dev_t *dev,  char *key, size_t keylen,  char *data, size_t datalen, char **errptr) {
 	int ret = KV_STORE_SUCCESS;
 	if ((check_dev_rw(dev) < 0) || !key || !data || (keylen == 0) || (datalen == 0) ){
 		ret = KV_STORE_INVALID_PARAMETER;
@@ -302,7 +302,7 @@ err:
 	SaveError(errptr, ret);
 	return ret;
 }
-int kv_store_get(kv_dev_t *dev, unsigned char *key, size_t keylen, unsigned char **buf, size_t *buflen, char **errptr) {
+int kv_store_get(kv_dev_t *dev,  char *key, size_t keylen,  char **buf, size_t *buflen, char **errptr) {
 	int ret = KV_STORE_SUCCESS;
 	struct mem *memtable = dev->memtable;
 	if ((check_dev_rw(dev) < 0) || !key  || (keylen ==0)){
@@ -334,7 +334,7 @@ err:
 	SaveError(errptr, ret);
 	return ret;
 }
-int kv_store_delete(kv_dev_t *dev, unsigned char *key, size_t keylen, char **errptr) {
+int kv_store_delete(kv_dev_t *dev,  char *key, size_t keylen, char **errptr) {
 	int ret = KV_STORE_SUCCESS;
 	struct mem *memtable = dev->memtable;
 	if ((check_dev_rw(dev) < 0) || !key  || (keylen ==0)){

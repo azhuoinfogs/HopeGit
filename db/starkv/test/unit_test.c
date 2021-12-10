@@ -71,7 +71,7 @@ void TEST_4_APP(void)
     char *err =NULL;
     char *keybuf= "key";
     char *valbuf= "value";
-    unsigned char *sv;
+     char *sv;
     int ret;
     size_t val_len;
     size_t keybuf_len = strlen(keybuf);
