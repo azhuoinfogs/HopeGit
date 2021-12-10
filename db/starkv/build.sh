@@ -7,4 +7,4 @@ make skiplist_test
 make bit_test
 make block_test
 make util_test
-make bench
+make unit_test

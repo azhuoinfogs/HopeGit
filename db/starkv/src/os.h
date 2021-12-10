@@ -241,7 +241,9 @@ enum BlockType{
 	STAR_BLOCK_TYPE_DATA,
 	STAR_BLOCK_TYPE_MAX
 };
-#define DEV_NAME "/dev/nvme0n1"
+#define DEV_NAME "/dev/nvme0"
+#define MAX_NAME_LEN 32
+#define MAX_DEVICE_COUNT 8
 #define STAR_DBINFO_BLOCKID 0
 #define BLOCK_START 1
 #define STAR_BITMAP_BLOCKID_START 1

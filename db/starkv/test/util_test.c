@@ -1,13 +1,24 @@
 #include "starkv.h"
 #include "../src/os.h"
 #include "../src/util.h"
+void nameArrayFree(char **infoArray) {
+	char **arrayItself = infoArray;
+	char *p = *infoArray;
+	while (p) {
+		free(p);
+		infoArray++;
+		p = *infoArray;
+	}
+	free(arrayItself);
+}	
 int main() {
     printf("test util\n");
-    int fd;
-    if ((fd = open("/dev/nvme0n5", O_RDWR | __O_DIRECT)) < 0) {
-        printf("open failed");
-        return -1;
+    int num;
+    char **name = list_ns(&num);
+    for (int i = 0; i < num; i++) {
+        printf("%s--%d\n", name[i], num);
     }
+    nameArrayFree(name);
     // char res[] = "create-ns: Success, created nsid:3";
     // int i =0;
     // int found = 0;

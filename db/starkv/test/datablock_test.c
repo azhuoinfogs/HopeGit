@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <time.h>
-#define DEV_NAME "/dev/nvme0n1"
 void _random_key(char* key, int length) 
 {
 	char salt[36] = "abcdefghijklmnopqrstuvwxyz0123456789";

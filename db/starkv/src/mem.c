@@ -208,10 +208,7 @@ int mem_put(struct mem *mem, SDataRow row) {
     }
     pNode->level = level;
 	dataRowCpy(SL_GET_NODE_DATA(pNode), row);
-    if (!skipListPut(mem->skipList, pNode)) {
-		ret = KV_STORE_ERROR_SKIPLIST;
-		goto err;
-	}
+    skipListPut(mem->skipList, pNode);
 	mem->mem_size += mem_size;
 err:
 	return ret;

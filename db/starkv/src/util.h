@@ -110,4 +110,5 @@ void nvme_free(void *p, bool huge);
 void *nvme_alloc(size_t len, int basesize, bool *huge);
 int tSystem(const char * cmd);
 int create_ns(char *devname, size_t lba_count);
+char **list_ns(int *num);
 #endif /* _LIB_NVMED_H */

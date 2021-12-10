@@ -21,6 +21,7 @@ MEM_TEST_OBJS =  ./test/mem_test.c
 BIT_TEST_OBJS =  ./test/bitmap_test.c
 BLOCK_TEST_OBJS =  ./test/datablock_test.c
 UTIL_TEST_OBJS =  ./test/util_test.c
+UNIT_TEST_OBJS =  ./test/unit_test.c
 LIBRARY = ./libstarkv.so
 .PHONY:bench
 release:
@@ -45,6 +46,8 @@ block_test:
 	$(CC)  $(BLOCK_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -g -o ./test/block_test
 util_test:
 	$(CC)  $(UTIL_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -g -o ./test/util_test
+unit_test:
+	$(CC)  $(UNIT_TEST_OBJS)  $(INCLUDE) -L ./ -lstarkv -g -o ./test/unit_test
 bench:
 	$(CC) bench/bench.c  -lstarkv -o ./bench/kv_bench
 .PHONY:clean

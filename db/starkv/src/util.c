@@ -130,3 +130,33 @@ int delete_ns(char *devname, int nsid) {
   }
   return nsid;
 }
+
+char **list_ns(int *num)
+{
+	FILE *stream;
+	char line[256] = {0};
+	char cmd[PATH_MAX] = "nvme list";
+	stream = popen(cmd, "r");
+	int row = 0;
+	char *b = "/dev/";
+	char **devices = malloc(sizeof(char *) * MAX_DEVICE_COUNT);
+	if (!devices) {
+		printf("malloc sizeof dbinfo failed.\n");
+		goto errout;
+	}
+	for(int i = 0; i< MAX_DEVICE_COUNT; i++ ) {
+		devices[i] = (char *)calloc(1, MAX_NAME_LEN);
+	}
+	while (fgets(line, sizeof(line), stream)) {
+		char *dev = strstr(line, b);
+		if (dev) {
+			strncpy(devices[row], dev, 12);
+			row++;
+		}
+	}
+	pclose(stream);
+	*num = row;
+	return devices;
+errout:
+	return NULL;
+}

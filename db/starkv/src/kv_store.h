@@ -14,6 +14,7 @@ extern "C" {
 #define ZS_KEY_BASE_REC_SIZE 24
 #define ZS_VAL_BASE_REC_SIZE 16
 #define MAX_KEY_LEN 512
+#define MAX_NAEM_LEN 32
 #define BLOCK_END 0xFFFFFFFF
 typedef struct dev_header {
     int64_t  ssd_size;

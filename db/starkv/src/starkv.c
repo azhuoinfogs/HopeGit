@@ -92,3 +92,50 @@ void starkv_cleanup_database(starkv_t *dev) {
     kv_dev_t* kdev = (kv_dev_t *)dev;
     return kv_destroy_dev(kdev);  
 }
+void starkv_array_free(void **infoArray, int num) {
+    for (size_t i = 0; i < num; i++) {
+        if (infoArray[i])
+            free(infoArray[i]);
+    }
+    if (infoArray)
+        free(infoArray);
+}
+starkv_info_t **starkv_list_column_families(size_t* lencfs, char** errptr) {
+    int num;
+    int fd;
+    starkv_info_t **infos = NULL;
+    char **name = list_ns(&num);
+    if((!name) || (num == 0)) {
+		goto err;
+    }
+    infos = malloc(num * sizeof(starkv_info_t *));
+    if (!infos) {
+		goto err;
+    }
+    for (int i = 0; i < num; i++) {
+        infos[i] = calloc(1, sizeof(starkv_info_t));
+        if (!infos[i]) {
+		    goto err;
+        }
+        int fd;
+	    if ((fd = open(name[i], O_RDWR | __O_DIRECT)) < 0) {
+		    goto err;
+	    }
+        dev_header_t *header = kv_restore_devheader(fd);
+        if (!header) {
+		    goto err;
+        }
+        infos[i]->db_id = header->db_id;
+        strcpy(infos[i]->dbname, header->dbname);
+        strcpy(infos[i]->devname, header->devname);
+        if (header) free(header);
+        if (fd) close(fd);
+    }
+    *lencfs = num;
+    if (name) starkv_array_free((void **)name, MAX_DEVICE_COUNT);
+    return infos;
+err:
+    if (name) starkv_array_free((void **)name, MAX_DEVICE_COUNT);
+    if (infos) starkv_array_free((void **)infos, num);
+    return NULL;
+}

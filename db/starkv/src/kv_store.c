@@ -136,7 +136,7 @@ int kv_store_devheader(kv_dev_t *dev) {
 	free(info_block);
 	return ret;
 }
-dev_header_t * kv_restore_devheader(int fd) {
+dev_header_t *kv_restore_devheader(int fd) {
 	DataBlock *info_block = stardb_restore_data_block(fd, STAR_DBINFO_BLOCKID);
 	if(!info_block){
 		goto err;
