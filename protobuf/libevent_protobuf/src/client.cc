@@ -9,11 +9,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <event.h>
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>
 #include <event2/util.h>
-
+#include <event2/event.h>
 #include "message.pb.h"
 
 using namespace std;
@@ -36,7 +35,7 @@ int main(int argc, char **argv) {
         event *ev_cmd = event_new(base, STDIN_FILENO,
                         EV_READ|EV_PERSIST,
                         cmd_msg_cb, (void *)bev);
-        event_add(ev_cmd, NULL);
+        event_add(ev_cmd, NULL); 
         sockaddr_in server_addr;
         memset(&server_addr, 0, sizeof(server_addr));
 

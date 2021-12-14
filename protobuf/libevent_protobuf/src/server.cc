@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
-#include <event.h>
+#include <event2/event.h>
 #include <event2/listener.h>
 #include <event2/bufferevent.h>
 #include <event2/thread.h>
@@ -42,7 +42,6 @@ void listener_cb(evconnlistener *listener, evutil_socket_t fd,
         bufferevent *bev = bufferevent_socket_new(base, fd, BEV_OPT_CLOSE_ON_FREE);
         bufferevent_setcb(bev, socket_read_cb, NULL, socket_event_cb, NULL);
         bufferevent_enable(bev, EV_READ|EV_PERSIST);
-
 }
 
 void socket_read_cb(bufferevent *bev, void *arg) {

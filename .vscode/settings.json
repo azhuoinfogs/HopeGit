@@ -89,6 +89,13 @@
         "meta.h": "c",
         "debug.h": "c",
         "fs.h": "c",
-        "starkv.h": "c"
+        "starkv.h": "c",
+        "*.ipp": "cpp",
+        "any": "cpp",
+        "strstream": "cpp",
+        "forward_list": "cpp",
+        "rope": "cpp",
+        "valarray": "cpp",
+        "variant": "cpp"
     }
 }
