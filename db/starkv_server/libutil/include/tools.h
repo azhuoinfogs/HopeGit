@@ -34,7 +34,6 @@ bool Split(const char* splited_chs,
            std::vector<std::string>& split_vec);
 
 bool CreateDir(const char* path);
-
 }  // end of namespace PUBLIC_UTIL
 
 

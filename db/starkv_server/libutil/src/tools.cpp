@@ -61,15 +61,4 @@ bool CreateDir(const char* path) {
 }
 
 }  // end of namespace PUBLIC_UTIL
-
-
-
-
-
-
-
-
-
-
-
 /* vim: set expandtab ts=4 sw=4 sts=4 tw=100: */

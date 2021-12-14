@@ -1,16 +1,12 @@
 #ifndef __KV_SERVER_H
 #define __KV_SERVER_H
-
-#include<iostream>
-#include <chrono>
-#include <thread>
-#include "rpc/server.h"
 #include "starkv_store_impl.h"
+#include "os.h"
 namespace kv_store {
 class KVServer {
 public:
     KVServer()
-        : s("127.0.0.1", test_port), dev_name("/dev/nvme0") {
+        :s("127.0.0.1", test_port), dev_name("/dev/nvme0") {
         common_db_ptr_ = new LdbStore(dev_name.c_str());    
     }
     bool InitKVStore() {
