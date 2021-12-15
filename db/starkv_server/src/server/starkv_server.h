@@ -13,6 +13,7 @@ public:
         common_db_ptr_->InitLdbStore();
         s.bind("Put", [this](std::string const& key, std::string const& value) {
             common_db_ptr_->Put(key.c_str(), value.c_str());
+            return true;
         });
         s.bind("Get", [this](std::string const& key) {
             std::string val;

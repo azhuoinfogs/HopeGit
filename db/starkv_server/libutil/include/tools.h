@@ -25,13 +25,13 @@
 
 namespace PUBLIC_UTIL {
 
-bool Split(std::string& splited_str, 
-           const std::string& split_ch, 
-           std::vector<std::string>& split_vec);
+// bool Split(std::string& splited_str, 
+//            const std::string& split_ch, 
+//            std::vector<std::string>& split_vec);
 
-bool Split(const char* splited_chs, 
-           const std::string& split_ch, 
-           std::vector<std::string>& split_vec);
+// bool Split(const char* splited_chs, 
+//            const std::string& split_ch, 
+//            std::vector<std::string>& split_vec);
 
 bool CreateDir(const char* path);
 }  // end of namespace PUBLIC_UTIL

@@ -1,4 +1,8 @@
 #include "os.h"
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/detail/classification.hpp>
+using std::string;
+using std::vector;
 static void split_whole_name(const char *whole_name, char *fname, char *ext)
 {
 	const char *p_ext;
@@ -75,4 +79,26 @@ void elogInit(void)
     }
     /* start EasyLogger */
     elog_start();
+}
+bool Split(string& splited_str, const string& split_ch, vector<string>& split_vec) {
+    vector<string> split_tmp_vec;
+    split_vec.clear();
+    boost::split(split_tmp_vec, splited_str, boost::is_any_of(split_ch));
+    for (vector<string>::iterator cur_iter = split_tmp_vec.begin();
+         cur_iter != split_tmp_vec.end();
+         ++cur_iter) {
+        string& cur_str = *cur_iter;
+        if (" " == cur_str || "" == cur_str) {
+            continue;
+        }
+        cur_str.erase(remove(cur_str.begin(), cur_str.end(), ' '), cur_str.end());
+        split_vec.push_back(cur_str);
+    }
+    return true;
+}
+
+
+bool Split(const char* splited_chs, const string& split_ch, vector<string>& split_vec) {
+    string splited_str = splited_chs;
+    return Split(splited_str, split_ch, split_vec);
 }
