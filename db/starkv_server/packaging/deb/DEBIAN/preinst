@@ -1,0 +1,32 @@
+#!/bin/bash
+
+csudo=""
+if command -v sudo > /dev/null; then
+    csudo="sudo"
+fi
+
+# Stop the service if running
+if pidof alStarkvServer &> /dev/null; then
+    if pidof systemd &> /dev/null; then
+        ${csudo} systemctl stop alStarkvServer || :
+    elif $(which service  &> /dev/null); then
+        ${csudo} service alStarkvServer stop || :
+    else
+        pid=$(ps -ef | grep "alStarkvServer" | grep -v "grep" | awk '{print $2}')
+        if [ -n "$pid" ]; then
+           ${csudo} kill -9 $pid   || :
+        fi
+    fi
+    echo "Stop alStarkvServer service success!"
+    sleep 1
+fi
+
+# if stardb.cfg already softlink, remove it
+cfg_install_dir="/etc/starkv"
+install_main_dir="/usr/local/starkv"
+if [ -f ${cfg_install_dir}/starkv.cfg ]; then
+    ${csudo} rm -f ${install_main_dir}/cfg/starkv.cfg   || :
+fi
+
+# there can not libstardb.so*, otherwise ln -s  error
+# ${csudo} rm -f ${install_main_dir}/driver/libstardb*   || :    
