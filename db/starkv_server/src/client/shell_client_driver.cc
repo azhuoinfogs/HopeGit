@@ -13,10 +13,7 @@
  * @brief 
  *  
  **/
-
-
 #include "shell_client.h"
-
 using namespace kv_store;
 int main(int argc, char *argv[]) {
 

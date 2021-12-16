@@ -23,8 +23,7 @@
 #include <string.h>
 #include <vector>
 #include <boost/unordered_map.hpp>
-
-#include "thread.h"
+#include <thread.h>
 #include "engine_client.h"
 
 

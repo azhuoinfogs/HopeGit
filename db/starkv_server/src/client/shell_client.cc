@@ -13,12 +13,11 @@
  * @brief 
  *  
  **/
-
+#include <iostream>
 #include "shell_client.h"
 #include "os.h"
-#include <iostream>
 namespace kv_store {
-
+using namespace std;
 using std::string;
 using std::vector;
 

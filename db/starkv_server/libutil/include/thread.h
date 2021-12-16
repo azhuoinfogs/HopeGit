@@ -58,6 +58,7 @@ class Thread {
             if (pthread_cancel(tid_) != 0) {
                 return false;
             }
+            return true;
         }
 
         bool Wait() {

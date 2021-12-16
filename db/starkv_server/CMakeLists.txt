@@ -44,4 +44,4 @@ set_target_properties(StarkvClient PROPERTIES OUTPUT_NAME alStarkvClient)
 
 # install(TARGETS StarkvServer
 #         RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/)
-# add_definitions("-Wall -g")
+add_definitions("-std=c++11  -Wno-deprecated")
