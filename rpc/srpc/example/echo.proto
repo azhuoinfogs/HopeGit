@@ -1,0 +1,20 @@
+syntax = "proto3";
+package echo;
+option cc_generic_services = true;
+ 
+message EchoRequest
+{
+	repeated int32 data = 1;
+};
+
+message EchoResponse
+{
+	repeated int32 sorted_data = 1;
+	int32 sum = 2;
+	int32 index = 3;
+};
+
+service EchoService
+{
+	rpc Get(EchoRequest) returns (EchoResponse);
+}

@@ -1,0 +1,2 @@
+/home/keyvalue/code/HopeGit/rpc/srpc/src/build/CMakeFiles/rebuild_cache.dir
+/home/keyvalue/code/HopeGit/rpc/srpc/src/build/CMakeFiles/edit_cache.dir
