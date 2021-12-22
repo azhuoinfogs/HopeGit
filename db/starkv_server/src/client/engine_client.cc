@@ -18,32 +18,51 @@
 
 namespace kv_store {
 
-EngineClient::EngineClient():c_("localhost", rpc::constants::DEFAULT_PORT){
+EngineClient::EngineClient():
+ rpc_channel_ptr_(NULL), serveice_stub_ptr_(NULL){
     ClientInit();
 }
 
 EngineClient::~EngineClient() {
+    delete serveice_stub_ptr_;
+    delete rpc_channel_ptr_; 
 }
 
 bool EngineClient::ClientInit() {
+    rpc_channel_ptr_ = new Channel("127.0.0.1", "12321");
+    serveice_stub_ptr_ = new EngineService::Stub(rpc_channel_ptr_);
     return true;
 }
 
-bool EngineClient::Put(const char* key, const char* value) {
-    std::string skey = key;
-    std::string svalue = value;
-    c_.call("Put", skey, svalue);
+bool EngineClient::Put(const char* key,  std::string& value) {
+    DBRequest db_request;
+    db_request.set_db_key(key);
+    db_request.set_db_value(value);
+
+    DBResponse db_reponse;
+    serveice_stub_ptr_->Put(NULL, &db_request, &db_reponse, NULL);
+    if (ERR == db_reponse.code()) {
+        printf("put failed! engine rpc server error");
+        return false;
+    }
     return true;
 }
 
 bool EngineClient::Get(const char* key, std::string& value) {
-    auto current_time = c_.call("Get", key).as<std::string>();
-    value = current_time;
+    DBRequest db_request;
+    db_request.set_db_key(key);
+
+    DBResponse db_reponse;
+    serveice_stub_ptr_->Get(NULL, &db_request, &db_reponse, NULL);
+    if (ERR == db_reponse.code()) {
+        printf("get failed! engine rpc server error");
+        return false;
+    }
+    value = db_reponse.db_res();
     return true;
 }
 
 bool EngineClient::Delete(const char* key) {
-    c_.call("Delete", key);
     return true;
 }
 

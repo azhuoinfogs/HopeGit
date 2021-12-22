@@ -47,7 +47,6 @@ class LdbStore : public KVStore {
         starkv_options_t *option_;
         starkv_t* ldb_ptr_;
 };
-
 }  // end of namespace kv_store
 
 

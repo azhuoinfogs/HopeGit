@@ -107,7 +107,7 @@ bool ShellClient::DoCmdSet(Params& params) {
     if (params_vec.size() != 2) {
         return false;
     }
-    return engine_client_.Put(params_vec[0].c_str(), params_vec[1].c_str());
+    return engine_client_.Put(params_vec[0].c_str(), params_vec[1]);
 }
 
 bool ShellClient::DoCmdGet(Params& params) {

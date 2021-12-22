@@ -74,5 +74,4 @@ bool LdbStore::Delete(const char* key) {
     }
     return true;
 }
-
 }

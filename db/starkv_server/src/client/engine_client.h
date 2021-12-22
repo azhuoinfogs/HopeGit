@@ -19,7 +19,9 @@
 
 #ifndef  __ENGINE_CLIENT_H_
 #define  __ENGINE_CLIENT_H_
-#include "rpc/client.h"
+#include "db_engine.pb.h"
+
+#include "rpc_channel.h"
 namespace kv_store {
 
 class EngineClient {
@@ -28,8 +30,7 @@ class EngineClient {
 
         ~EngineClient();
 
-
-        bool Put(const char* key, const char* value);
+        bool Put(const char* key,  std::string& value);
 
         bool Get(const char* key, std::string& value);
 
@@ -39,7 +40,8 @@ class EngineClient {
         bool ClientInit();
 
     private:
-        rpc::client c_;
+        Channel* rpc_channel_ptr_;
+        EngineService::Stub* serveice_stub_ptr_;
 };
 
 }  // end of namespace db_engine

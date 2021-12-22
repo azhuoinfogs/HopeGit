@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <elog_file_cfg.h>
 #include <elog.h>
-#include "rpc/server.h"
 #include <tools.h>
 
 void elogInit(void);
