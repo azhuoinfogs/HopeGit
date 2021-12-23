@@ -55,31 +55,6 @@ void splitpath(const char *path, char *drive, char *dir, char *fname, char *ext)
 		dir[0] = '\0';
 	}
 }
-void elogInit(void)
-{
-    /* close printf buffer */
-    // setbuf(stdout, NULL);
-    /* initialize EasyLogger */
-    elog_init();
-    /* set EasyLogger log format */
-    elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL);
-    elog_set_fmt(ELOG_LVL_ERROR, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
-    elog_set_fmt(ELOG_LVL_WARN, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
-    elog_set_fmt(ELOG_LVL_INFO, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME);
-    elog_set_fmt(ELOG_LVL_DEBUG, ELOG_FMT_ALL & ~ELOG_FMT_FUNC);
-    elog_set_fmt(ELOG_LVL_VERBOSE, ELOG_FMT_ALL & ~ELOG_FMT_FUNC);
-    elog_set_text_color_enabled(true);
-	// elog_async_enabled(true);
-
-    char drive[128] = {0}, dir[128] = {0}, fname[128] = {0}, ext[128] = {0};
-    splitpath(ELOG_FILE_NAME, drive, dir, fname, ext);
-    if(-1 == access(dir, F_OK)){
-        printf("The path '%s' does not exist, please create the directory manually\n", dir);
-        exit(0);
-    }
-    /* start EasyLogger */
-    elog_start();
-}
 bool Split(string& splited_str, const string& split_ch, vector<string>& split_vec) {
     vector<string> split_tmp_vec;
     split_vec.clear();

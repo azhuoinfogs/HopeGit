@@ -70,6 +70,7 @@ bool ThreadPool::Wait() {
             pthread_join(thread_ids_[i], NULL);
         }
     }
+   return true;
 }
 
 bool ThreadPool::Destroy() {

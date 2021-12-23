@@ -4,8 +4,6 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <elog_file_cfg.h>
-#include <elog.h>
 #include <tools.h>
 
 void elogInit(void);

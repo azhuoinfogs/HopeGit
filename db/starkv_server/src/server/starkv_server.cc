@@ -5,9 +5,7 @@ using namespace kv_store;
 class Server;
 void exit_hander(int sig)
 {
-  log_i("Received signal: %d", sig);
   if((sig == SIGINT) || (sig == SIGTERM)){
-    log_i("exit...");
   }
   exit(0);
 }

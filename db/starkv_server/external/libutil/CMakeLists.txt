@@ -1,0 +1,20 @@
+project(Starkv)
+cmake_minimum_required(VERSION 2.9)
+
+aux_source_directory(src SRC)
+INCLUDE_DIRECTORIES(include)
+add_library(pubutil SHARED ${SRC})
+target_link_libraries(pubutil pthread)
+set_target_properties(pubutil PROPERTIES OUTPUT_NAME "pubutil")
+MESSAGE(STATUS "lib path: ${STAR_ROOT_DIR}/lib")
+set(LIBRARY_OUTPUT_PATH ${STAR_ROOT_DIR}/external/libutil/lib)
+
+# add_executable(stardb_test test/stardb_test.c)
+# add_dependencies(stardb_test starocks)
+# target_link_libraries(stardb_test rocksdb starocks)
+# set_target_properties(stardb_test PROPERTIES OUTPUT_NAME alstardb_test)
+
+# add_executable(vector_test test/vector_test.c)
+# add_dependencies(vector_test starocks)
+# target_link_libraries(vector_test rocksdb starocks)
+# set_target_properties(vector_test PROPERTIES OUTPUT_NAME alvector_test)
