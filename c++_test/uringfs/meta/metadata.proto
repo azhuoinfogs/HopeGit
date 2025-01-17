@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package boss_meta;
+
+option cc_enable_arenas = true;
+option optimize_for = SPEED;
+
+message Metadata {
+    uint64 parent_inode_id = 1;
+    uint64 inode_id = 2;
+    string name = 3;
+    bool is_directory = 4;
+    uint64 file_size = 5;
+    uint64 atime = 6; // 访问时间戳
+    uint64 mtime = 7; // 修改时间戳
+    uint32 permissions = 8; // 权限位
+    uint32 owner_id = 9;   // 所有者 ID
+    uint32 group_id = 10;   // 组 ID
+    uint32 nlink = 11;     // 链接数
+    uint32 block_size = 12; // 数据块大小
+    uint64 blocks = 13;    // 占用的数据块总数
+    map<string, string> xattrs = 14; //扩展属性
+}
